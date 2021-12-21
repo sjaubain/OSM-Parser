@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0" prefWidth="1100.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
+    <children>
+        <MenuBar prefHeight="28.0" prefWidth="1100.0" AnchorPane.bottomAnchor="670.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Close" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Delete" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <SplitPane dividerPositions="0.9900542495479204" layoutX="7.0" layoutY="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+            <items>
+                <AnchorPane>
+                    <children>
+                        <ScrollPane fx:id="logsScrollPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="518.0">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="863.0">
+                                    <ListView fx:id="logsListView" prefHeight="151.0" prefWidth="855.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+                                    </ListView>
+                                </AnchorPane>
+                            </content>
+                        </ScrollPane>
+                        <Pane fx:id="logsPane" layoutY="468.0" prefHeight="175.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="495.0">
+                            <children>
+                                <ToolBar layoutX="-7.0" prefHeight="23.0" prefWidth="905.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="173.0">
+                                    <items>
+                                        <Button fx:id="btnReduceLogs" maxHeight="15.0" maxWidth="15.0" minHeight="15.0" minWidth="15.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="15.0" text="" translateX="10.0" />
+                                        <Label text="logs" translateX="12.0" />
+                                        <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#load" prefHeight="15.0" prefWidth="40.0" text="load" translateX="20.0" />
+                                    </items>
+                                </ToolBar>
+                            </children>
+                        </Pane>
+                        <Pane fx:id="mapPane" layoutX="1.0" prefHeight="496.0" prefWidth="890.0" AnchorPane.bottomAnchor="175.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </children>
+                </AnchorPane>
+                <AnchorPane minWidth="200.0">
+                    <children>
+                        <TextField layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="45.81617" />
+                        <TextField layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="5.95288" />
+                        <TextField layoutX="51.0" layoutY="60.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="47.81126" />
+                        <TextField layoutX="51.0" layoutY="85.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="10.49584" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="14.0" text="minlat" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="37.0" text="minlon" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="62.0" text="maxlat" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="87.0" text="maxlon" />
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+    </children>
+</AnchorPane>

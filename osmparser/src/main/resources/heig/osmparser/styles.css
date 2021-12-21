@@ -1,0 +1,47 @@
+
+#mapPane {
+    -fx-border-radius: 2px;
+    -fx-border-color: #1f1e1e;
+    -fx-background-color: #1f1e1e;
+}
+
+#btnReduceLogs {
+    -fx-background-image: url("reduce.png");
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+#btnReduceLogs:hover {
+    -fx-focus-color: blue;
+    -fx-faint-focus-color: blue;
+}
+
+#logsScrollPane {
+    -fx-fit-to-width: true;
+}
+
+#btnLoad {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+#btnload:hover {
+    -fx-focus-color: blue;
+    -fx-faint-focus-color: blue;
+}
+
+#logsScrollPane {
+    -fx-font-family: "DejaVu Sans Mono";
+    -fx-font-size: 11;
+}
+
+.list-view {
+    -fx-control-inner-background: #d3d3d3;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.label {
+    -fx-font-family: "DejaVu Sans Mono";
+    -fx-font-size: 11;
+}
