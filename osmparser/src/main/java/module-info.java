@@ -11,5 +11,6 @@ module heig.osmparser {
     exports heig.osmparser.controllers;
     opens heig.osmparser.controllers to javafx.fxml;
     exports heig.osmparser.net;
+    exports heig.osmparser.utils.logs;
     opens heig.osmparser.net to javafx.fxml;
 }

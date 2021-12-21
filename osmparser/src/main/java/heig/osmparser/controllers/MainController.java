@@ -1,5 +1,6 @@
 package heig.osmparser.controllers;
 
+import heig.osmparser.Shell;
 import heig.osmparser.drawing.Box;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
@@ -18,7 +19,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -36,9 +41,15 @@ public class MainController implements Initializable {
     private Graph g;
     private Box selection;
     private Task<Integer> task;
+    private Shell shell;
 
     @Override
     public void initialize(URL url2, ResourceBundle resourceBundle) {
+
+        // just to fire scroll events, otherwise it is hidden by other nodes...
+        logsListView.toFront();
+
+        shell = new Shell(this);
 
         task = new Task() {
             @Override
@@ -76,10 +87,13 @@ public class MainController implements Initializable {
     }
 
     public void load() {
+        /*
         if(!task.isRunning()) {
             log("starting reading data from file, please wait...", Log.LogLevels.INFO);
             new Thread(task).start(); // alternatively use ExecutorService
         }
+        */
+        shell.exec("osmosis --caca");
     }
 
     public void drawGraph() {
@@ -142,12 +156,13 @@ public class MainController implements Initializable {
 
     public void log(String msg, Log.LogLevels logLevel) {
 
-        Text newText = new Text(msg);
+        Text newText = new Text("> " + msg);
         if(logLevel.equals(Log.LogLevels.INFO))
             newText.setFill(Color.DARKGREEN);
         else
             newText.setFill(Color.RED);
 
         logsListView.getItems().add(logsListView.getItems().size(), newText);
+        logsListView.scrollTo(logsListView.getItems().size() - 1);
     }
 }
