@@ -8,25 +8,31 @@ import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.Parser;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.text.Text;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -41,30 +47,38 @@ public class MainController implements Initializable {
     private ListView logsListView;
     @FXML
     private TextField minlat, minlon, maxlat, maxlon;
+    @FXML
+    private RadioButton actionAreaSelection, actionDijkstra;
+    @FXML
+    private VBox importChoices;
 
     private Graph g;
     private Box selection;
     private Task<Integer> task;
     private Shell shell;
+    private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
+    private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
 
     @Override
-    public void initialize(URL url2, ResourceBundle resourceBundle) {
+    public void initialize(URL url, ResourceBundle resourceBundle) {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsListView.toFront();
 
+        actionAreaSelection.setSelected(true);
+
         g = new Graph();
-        g.setBounds(new double[]{45.81617, 5.95288, 47.81126, 10.49584});
+        g.setBounds(new double[]{5.95288, 47.81126, 10.49584, 45.81617});
         shell = new Shell(this);
 
         task = new Task() {
             @Override
             protected Integer call() throws Exception {
-                Parser parser = new Parser();
-                g = parser.toGraph("./input/ways.osm");
-                parser.addCities(g, "./input/cities.osm");
-                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-                return 0;
+            Parser parser = new Parser();
+            g = parser.toGraph("./input/ways.osm");
+            parser.addCities(g, "./input/cities.osm");
+            //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+            return 0;
             }
         };
 
@@ -80,31 +94,90 @@ public class MainController implements Initializable {
             log("parsing error.", Log.LogLevels.ERROR);
         });
 
-        mapPane.setOnMousePressed(event -> {
-            selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
-            double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
-            minlat.setText(String.valueOf(latLon[0]));
-            minlon.setText(String.valueOf(latLon[1]));
+        actionAreaSelection.setOnAction(e -> {
+            current_action = ACTION_PERFORM.AREA_SELECTION;
         });
-        mapPane.setOnMouseDragged(event -> {
-            if (event.getSceneY() < mapPane.getPrefHeight()) {
-                selection.render(event.getSceneX(), event.getSceneY() - 25);
+        actionDijkstra.setOnAction(e -> {
+            current_action = ACTION_PERFORM.DIJKSTRA;
+        });
+
+        mapPane.setOnMousePressed(event -> {
+            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
+                selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
                 double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
                 maxlat.setText(String.valueOf(latLon[0]));
+                minlon.setText(String.valueOf(latLon[1]));
+            }
+        });
+        mapPane.setOnMouseDragged(event -> {
+            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
+                selection.render(event.getSceneX(), event.getSceneY() - 25);
+                double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
+                minlat.setText(String.valueOf(latLon[0]));
                 maxlon.setText(String.valueOf(latLon[1]));
             }
         });
         mapPane.setOnMouseReleased(event -> {
-            mapPane.getChildren().remove(selection.getRectangle());
+            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
+                mapPane.getChildren().remove(selection.getRectangle());
+            }
         });
+    }
+
+    public String[] generateOsmosisCommands() {
+
+        // looking for .pbf file
+        File folder = new File("./input");
+        File[] listOfFiles = folder.listFiles();
+        String pbfFile = "./input/";
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                if(listOfFiles[i].getName().contains(".pbf")) {
+                    pbfFile += listOfFiles[i].getName();
+                }
+            }
+        }
+
+        String boundingBox = " --bounding-box" +
+                " top=" + maxlat.getText() +
+                " left=" + minlon.getText() +
+                " bottom=" + minlat.getText() +
+                " right=" + maxlon.getText();
+        String commandWays = "osmosis --read-pbf " + pbfFile + boundingBox;
+        String commandCities = "osmosis --read-pbf " + pbfFile + boundingBox;
+        int nbPlace = 0, nbRoad = 0;
+        String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
+        ObservableList choices = importChoices.getChildren();
+        for(Object choice : choices) {
+            RadioButton rb = ((RadioButton) choice);
+            if(rb.isSelected()) {
+                // we use 'I' as a delimiter in the fx id because special chars are not allowed
+                String choiceKey = rb.getId(), choiceValue = choiceKey.substring(choiceKey.indexOf("I") + 1);
+                switch (choiceKey.substring(0, choiceKey.indexOf("I"))) {
+                    case "place":
+                        places += (nbPlace > 0 ? "," : "") + choiceValue;
+                        nbPlace++;
+                        break;
+                    case "highway":
+                        roads += (nbRoad > 0 ? "," : "") + choiceValue;
+                        nbRoad++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        commandWays += roads + " --tf reject-relations --un --wx ./input/ways.osm";
+        commandCities += places + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
+        return new String[]{commandWays, commandCities};
     }
 
     void displayGraphBounds() {
         double[] bounds = g.getBounds();
-        minlat.setText(String.valueOf(bounds[0]));
-        minlon.setText(String.valueOf(bounds[1]));
-        maxlat.setText(String.valueOf(bounds[2]));
-        maxlon.setText(String.valueOf(bounds[3]));
+        minlon.setText(String.valueOf(bounds[0]));
+        maxlat.setText(String.valueOf(bounds[1]));
+        maxlon.setText(String.valueOf(bounds[2]));
+        minlat.setText(String.valueOf(bounds[3]));
     }
 
     double[] getLatLonFromMousePos(double x, double y) {
@@ -115,13 +188,13 @@ public class MainController implements Initializable {
             double[] bounds = g.getBounds();
             double ratioX = x / mapPane.getPrefWidth();
             double ratioY = y / mapPane.getPrefHeight();
-            double fromLat = bounds[0];
-            double toLat = bounds[2];
-            double fromLon = bounds[1];
-            double toLon = bounds[3];
+            double fromLat = bounds[1];
+            double toLat = bounds[3];
+            double fromLon = bounds[0];
+            double toLon = bounds[2];
             latLon = new double[]{
-                    Maths.round(fromLat + ratioX * (toLat - fromLat), 4),
-                    Maths.round(fromLon + ratioY * (toLon - fromLon), 4)
+                    Maths.round(fromLat + ratioY * (toLat - fromLat), 4),
+                    Maths.round(fromLon + ratioX * (toLon - fromLon), 4)
             };
         }
         return latLon;
@@ -130,11 +203,16 @@ public class MainController implements Initializable {
     public void load() {
 
         if(!task.isRunning()) {
-            log("starting reading data from file, please wait...", Log.LogLevels.INFO);
+            log("starting filtering data with osmosis", Log.LogLevels.INFO);
+            String[] commands = generateOsmosisCommands();
+            for(String command : commands) {
+                shell.exec(command);
+            }
+            //log("starting reading data from file, please wait...", Log.LogLevels.INFO);
             new Thread(task).start(); // alternatively use ExecutorService
         }
 
-        //shell.exec("osmosis --caca");
+        //shell.exec("osmosis");
     }
 
     public void drawGraph() {
@@ -143,61 +221,63 @@ public class MainController implements Initializable {
 
         //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
-        int[] shape1 = Maths.latsToMN03(bounds[2], bounds[3]);
-        int[] shape2 = Maths.latsToMN03(bounds[0], bounds[1]);
-        int[] mapShape = {shape1[0] - shape2[0], shape1[1] - shape2[1]};
+        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner
+        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
+        int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])}; // times -1 because y axis is in reverse side (downside)
 
         // draw roads
         for(Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
+            //if(n1 != null) {
+                int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
+                double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
+                double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+                for (Long j : g.getAdjList().get(i)) {
+                    Node n2 = g.getNodes().get(j);
 
-            int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
-            double startX = (nodeShape1[0] - shape2[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-            double startY = mapPane.getPrefHeight() - (nodeShape1[1] - shape2[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
-            for (Long j : g.getAdjList().get(i)) {
-                Node n2 = g.getNodes().get(j);
+                    //if (n2 != null) {
+                        int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
+                        double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
+                        double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
 
-                int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
-                double endX = (nodeShape2[0] - shape2[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-                double endY = mapPane.getPrefHeight() - (nodeShape2[1] - shape2[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
-
-                Line line = new Line(startX, startY, endX, endY);
-                line.setStroke(Color.LIGHTYELLOW);
-                line.setStrokeWidth(0.3);
-                mapPane.getChildren().add(line);
-            }
+                        Line line = new Line(startX, startY, endX, endY);
+                        line.setStroke(Color.LIGHTYELLOW);
+                        line.setStrokeWidth(0.3);
+                        mapPane.getChildren().add(line);
+                    //}
+                }
+            //}
         }
 
         // draw cities
         int maxPop = g.getMaxPopulation();
         double maxRadius = Math.sqrt(300);
 
-        int[] c1 = {255, 255, 0};
-        int[] c2 = {255, 0, 0};
+        int[] c1 = {255, 255, 0}; // yellow
+        int[] c2 = {255, 0, 0}; // red
 
         for(Node n : cities.values()) {
 
             double radius = Math.sqrt(300 * n.getPopulation() / (double)maxPop);
             double scale =  (1 - (radius / maxRadius));
 
-            Platform.runLater(new Runnable() {
-                @Override public void run() {
-                    // color gradient between yellow and red
-                    Color c = Color.rgb(255, (int)((c1[1] - c2[1]) * scale),0);
-                    Circle circle = new Circle(radius, c);
-                    int[] nodeShape = Maths.latsToMN03(n.getLat(), n.getLon());
+            Platform.runLater(() -> {
+                // color gradient between yellow and red
+                Color c = Color.rgb(255, (int)((c1[1] - c2[1]) * scale),0);
+                Circle circle = new Circle(radius, c);
+                int[] nodeShape = Maths.latsToMN03(n.getLat(), n.getLon());
 
-                    circle.setLayoutY(mapPane.getPrefHeight() - (nodeShape[1] - shape2[1]) * mapPane.getPrefHeight() / (double)mapShape[1]);
-                    circle.setLayoutX((nodeShape[0] - shape2[0]) * mapPane.getPrefWidth() / (double)mapShape[0]);
-                    mapPane.getChildren().add(circle);
-                }
+                circle.setLayoutX((nodeShape[0] - shape1[0]) * mapPane.getPrefWidth() / (double)mapShape[0]);
+                // times -1 because y axis is in reverse side (downside)
+                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * mapPane.getPrefHeight() / (double)mapShape[1]);
+                mapPane.getChildren().add(circle);
             });
         }
     }
 
     public void log(String msg, Log.LogLevels logLevel) {
 
-        Text newText = new Text("> " + msg);
+        Text newText = new Text(msg);
         if(logLevel.equals(Log.LogLevels.INFO))
             newText.setFill(Color.DARKGREEN);
         else

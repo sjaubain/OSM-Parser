@@ -19,32 +19,33 @@ public class Shell {
     }
 
     public void exec(String command) {
-        new Thread(() -> {
+        //new Thread(() -> {
             Process process;
             try {
-                // TODO: make it work for linux
+                System.out.println(command);
+                Platform.runLater(() -> {
+                    controller.log(command, Log.LogLevels.INFO);
+                });
                 if (isWindows) {
-                    //process = Runtime.getRuntime().exec(String.format("cmd.exe dir %s", homeDirectory));
-                    process = Runtime.getRuntime().exec(command);
+                    process = Runtime.getRuntime().exec("cmd /c " + command);
                 } else {
-                    //process = Runtime.getRuntime().exec(String.format("sh -c ls %s", homeDirectory));
-                    process = Runtime.getRuntime().exec(command);
+                    process = Runtime.getRuntime().exec("sh -c " + command);
                 }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line = "";
                 while ((line = reader.readLine()) != null) {
                     String finalLine = line;
+                    System.out.println(line);
                     Platform.runLater(() -> {
                         controller.log(finalLine, Log.LogLevels.INFO);
                     });
                 }
-                process.waitFor();
                 reader.close();
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     controller.log(e.getMessage(), Log.LogLevels.ERROR);
                 });
             }
-        }).start();
+        //}).start();
     }
 }

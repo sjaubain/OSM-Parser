@@ -21,11 +21,6 @@
     -fx-faint-focus-color: transparent;
 }
 
-#btnload:hover {
-    -fx-focus-color: blue;
-    -fx-faint-focus-color: blue;
-}
-
 .list-view {
     -fx-control-inner-background: #d3d3d3;
     -fx-font-family: "DejaVu Sans Mono";
@@ -34,11 +29,7 @@
     -fx-padding: 0;
 }
 
-.list-cell:odd {
-    -fx-background-color: #d3d3d3;
-}
-
-.list-cell:even {
+.list-cell {
     -fx-background-color: #d3d3d3;
 }
 

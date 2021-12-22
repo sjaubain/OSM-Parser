@@ -50,6 +50,7 @@ public class Parser {
                 Node node = nodes.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
+                    //TODO add all tags from the node as a list of Strings (can extract whatever we want furthermore !!!!!)
                     //TODO add additive information depending on context (city name, population,...)
                     long n = Long.parseLong(element.getAttribute("id"));
 
@@ -89,10 +90,10 @@ public class Parser {
             NodeList nodes = doc.getElementsByTagName("bounds");
             Element bnds = (Element) nodes.item(0);
             g.setBounds(new double[]{
-                    Double.parseDouble(bnds.getAttribute("minlat")),
                     Double.parseDouble(bnds.getAttribute("minlon")),
                     Double.parseDouble(bnds.getAttribute("maxlat")),
-                    Double.parseDouble(bnds.getAttribute("maxlon"))
+                    Double.parseDouble(bnds.getAttribute("maxlon")),
+                    Double.parseDouble(bnds.getAttribute("minlat"))
             });
 
             // connect all nodes with ways of type route
