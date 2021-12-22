@@ -1,5 +1,8 @@
 package heig.osmparser.utils.maths;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public abstract class Maths {
 
     public static int[] latsToMN03(double lat, double lon) {
@@ -14,5 +17,13 @@ public abstract class Maths {
         int N = 20000000 + (int) Math.round(dY);
 
         return new int[]{E, N};
+    }
+
+    public static double round(double value, int nbDecimal) {
+        if (nbDecimal < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(nbDecimal, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 }

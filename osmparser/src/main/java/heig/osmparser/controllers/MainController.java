@@ -13,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -37,6 +39,8 @@ public class MainController implements Initializable {
     private ScrollPane logsScrollPane;
     @FXML
     private ListView logsListView;
+    @FXML
+    private TextField minlat, minlon, maxlat, maxlon;
 
     private Graph g;
     private Box selection;
@@ -49,6 +53,8 @@ public class MainController implements Initializable {
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsListView.toFront();
 
+        g = new Graph();
+        g.setBounds(new double[]{45.81617, 5.95288, 47.81126, 10.49584});
         shell = new Shell(this);
 
         task = new Task() {
@@ -67,6 +73,7 @@ public class MainController implements Initializable {
             Integer result = task.getValue();
             log("parsing done. drawing graph", Log.LogLevels.INFO);
             drawGraph();
+            displayGraphBounds();
         });
 
         task.setOnFailed(e -> {
@@ -75,10 +82,16 @@ public class MainController implements Initializable {
 
         mapPane.setOnMousePressed(event -> {
             selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
+            double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
+            minlat.setText(String.valueOf(latLon[0]));
+            minlon.setText(String.valueOf(latLon[1]));
         });
         mapPane.setOnMouseDragged(event -> {
             if (event.getSceneY() < mapPane.getPrefHeight()) {
                 selection.render(event.getSceneX(), event.getSceneY() - 25);
+                double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
+                maxlat.setText(String.valueOf(latLon[0]));
+                maxlon.setText(String.valueOf(latLon[1]));
             }
         });
         mapPane.setOnMouseReleased(event -> {
@@ -86,14 +99,42 @@ public class MainController implements Initializable {
         });
     }
 
+    void displayGraphBounds() {
+        double[] bounds = g.getBounds();
+        minlat.setText(String.valueOf(bounds[0]));
+        minlon.setText(String.valueOf(bounds[1]));
+        maxlat.setText(String.valueOf(bounds[2]));
+        maxlon.setText(String.valueOf(bounds[3]));
+    }
+
+    double[] getLatLonFromMousePos(double x, double y) {
+        double[] latLon = new double[2];
+        if(!minlat.getText().isEmpty()) { // meaning other bounds are not empty too
+            // scales
+            // TODO : factorize this for getting bounds
+            double[] bounds = g.getBounds();
+            double ratioX = x / mapPane.getPrefWidth();
+            double ratioY = y / mapPane.getPrefHeight();
+            double fromLat = bounds[0];
+            double toLat = bounds[2];
+            double fromLon = bounds[1];
+            double toLon = bounds[3];
+            latLon = new double[]{
+                    Maths.round(fromLat + ratioX * (toLat - fromLat), 4),
+                    Maths.round(fromLon + ratioY * (toLon - fromLon), 4)
+            };
+        }
+        return latLon;
+    }
+
     public void load() {
-        /*
+
         if(!task.isRunning()) {
             log("starting reading data from file, please wait...", Log.LogLevels.INFO);
             new Thread(task).start(); // alternatively use ExecutorService
         }
-        */
-        shell.exec("osmosis --caca");
+
+        //shell.exec("osmosis --caca");
     }
 
     public void drawGraph() {

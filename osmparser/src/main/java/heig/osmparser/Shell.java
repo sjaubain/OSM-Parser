@@ -22,6 +22,7 @@ public class Shell {
         new Thread(() -> {
             Process process;
             try {
+                // TODO: make it work for linux
                 if (isWindows) {
                     //process = Runtime.getRuntime().exec(String.format("cmd.exe dir %s", homeDirectory));
                     process = Runtime.getRuntime().exec(command);
