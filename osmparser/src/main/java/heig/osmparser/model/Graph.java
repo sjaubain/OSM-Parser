@@ -6,10 +6,7 @@ import heig.osmparser.utils.maths.Maths;
 import javafx.fxml.Initializable;
 import javafx.util.Pair;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,9 +26,9 @@ public class Graph {
 
     private int maxPopulation;
 
-    private long[] pred;
+    private HashMap<Long, Long> pred;
 
-    private long[] lambda;
+    private HashMap<Long, Double> lambda;
 
     public Graph() {
         nodes = new HashMap<>();
@@ -92,9 +89,61 @@ public class Graph {
         return ret;
     }
 
-    public void dijkstra(int src) {
-        pred = new long[this.size()];
-        lambda = new long[this.size()];
+    public void dijkstra(long src) {
+        pred = new HashMap<>();
+        lambda = new HashMap<>();
+        for(long node : adjList.keySet()) {
+            if(node == src)
+                lambda.put(node, 0.0);
+            else
+                lambda.put(node, Double.MAX_VALUE);
+            pred.put(node, (long)-1);
+        }
+        // custom min heap
+        PriorityQueue<Pair<Double, Long>> Q = new PriorityQueue<>((a, b) -> (int) (a.getKey() - b.getKey()));
+        Q.add(new Pair<>(0.0, src));
+        while(!Q.isEmpty()) {
+            Pair<Double, Long> p = Q.poll();
+            long i_id = p.getValue();
+            Node i = nodes.get(i_id);
+            if(i != null) {
+                for (long j_id : adjList.get(i_id)) {
+                    Node j = nodes.get(j_id);
+                    if(j != null) {
+                        double c_ij = distance(i, j);
+                        if(lambda.get(j_id) > lambda.get(i_id) + c_ij) {
+                            lambda.replace(j_id, lambda.get(i_id) + c_ij);
+                            pred.replace(j_id, i_id);
+                            Q.add(new Pair<>(lambda.get(j_id), j_id));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public Node closestNodeToCoords(double lat, double lon) {
+        double minDist = Double.MAX_VALUE;
+        Node minNode = null;
+        for(long id : adjList.keySet()) {
+            Node n = nodes.get(id);
+            if(n != null) {
+                double curDist = distance(new Node(0, lat, lon, 0), n);
+                if (curDist < minDist) {
+                    minDist = curDist;
+                    minNode = n;
+                }
+            }
+        }
+        return minNode;
+    }
+
+    public List<Node> getShortestPath(Node dest) {
+        List<Node> ret = new LinkedList<>();
+        while(pred.get(dest.getId()) != (long)-1) {
+            ret.add(dest); dest = nodes.get(pred.get(dest.getId()));
+        }
+        return ret;
     }
 
     public HashMap<Long, List<Long>> getAdjList() {
@@ -109,7 +158,7 @@ public class Graph {
         return cities;
     }
 
-    public int size() { return nodes.size(); }
+    public int size() { return adjList.size(); }
 
     public double[] getBounds() {
         return bounds;
@@ -117,6 +166,14 @@ public class Graph {
 
     public int getMaxPopulation() {
         return maxPopulation;
+    }
+
+    public HashMap<Long, Double> getLambda() {
+        return lambda;
+    }
+
+    public HashMap<Long, Long> getPred() {
+        return pred;
     }
 
     public void setBounds(double[] bounds) {

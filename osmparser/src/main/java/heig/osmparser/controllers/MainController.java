@@ -27,6 +27,7 @@ import javafx.scene.text.Text;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -52,6 +53,8 @@ public class MainController implements Initializable {
     private Shell shell;
     private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
+    private boolean firstNodeChoosen = true;
+    private Node from, to;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -101,12 +104,25 @@ public class MainController implements Initializable {
         });
 
         mapPane.setOnMousePressed(event -> {
+            //TODO this event is not triggered because it is shadowed by the scroll and drag events
             if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                 if(event.getButton().equals(MouseButton.PRIMARY)) {
                     selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
                     double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
                     maxlat.setText(String.valueOf(latLon[0]));
                     minlon.setText(String.valueOf(latLon[1]));
+                }
+            } else if(current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
+                if(firstNodeChoosen) {
+                    System.out.println("dijkstra");
+                    from = g.closestNodeToCoords(event.getX(), event.getY());
+                    firstNodeChoosen = false;
+                    g.dijkstra(from.getId());
+                } else {
+                    to = g.closestNodeToCoords(event.getX(), event.getY());
+                    firstNodeChoosen = true;
+                    //TODO wait that dijkstra is done
+                    drawPath(g.getShortestPath(to));
                 }
             }
         });
@@ -223,6 +239,31 @@ public class MainController implements Initializable {
         String[] commands = generateOsmosisCommands();
         for(String command : commands) {
             shell.exec(command);
+        }
+    }
+
+    public void drawPath(List<Node> nodes) {
+
+        //default metric for MN03 is centimeter
+        double[] bounds = g.getBounds();
+        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner
+        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
+        int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])}; // times -1 because y axis is in reverse side (downside)
+
+        for(int i = 0; i < nodes.size() - 1; ++i) {
+
+            Node n1 = nodes.get(i), n2 = nodes.get(i + 1);
+            int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
+            double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
+            double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+            int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
+            double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
+            double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+
+            Line line = new Line(startX, startY, endX, endY);
+            line.setStroke(Color.BLUE);
+            line.setStrokeWidth(0.4);
+            mapPane.getChildren().add(line);
         }
     }
 
