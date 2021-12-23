@@ -1,7 +1,6 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.Shell;
-import heig.osmparser.drawing.Box;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.utils.logs.Log;
@@ -16,27 +15,24 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.text.Text;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
+    @FXML
+    private AnchorPane leftPane;
     @FXML
     private Pane logsPane;
     @FXML
@@ -64,21 +60,22 @@ public class MainController implements Initializable {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsListView.toFront();
-
+        // in order the map pane not overflows the logs pane
+        logsPane.toFront();
         actionAreaSelection.setSelected(true);
 
         g = new Graph();
-        g.setBounds(new double[]{5.95288, 47.81126, 10.49584, 45.81617});
+
         shell = new Shell(this);
 
         task = new Task() {
             @Override
             protected Integer call() throws Exception {
-            Parser parser = new Parser();
-            g = parser.toGraph("./input/ways.osm");
-            parser.addCities(g, "./input/cities.osm");
-            //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-            return 0;
+                Parser parser = new Parser();
+                g = parser.toGraph("./input/ways.osm");
+                parser.addCities(g, "./input/cities.osm");
+                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+                return 0;
             }
         };
 
@@ -91,7 +88,7 @@ public class MainController implements Initializable {
         });
 
         task.setOnFailed(e -> {
-            log("parsing error.", Log.LogLevels.ERROR);
+            log("parsing error. " + e.toString(), Log.LogLevels.ERROR);
         });
 
         actionAreaSelection.setOnAction(e -> {
@@ -103,25 +100,35 @@ public class MainController implements Initializable {
 
         mapPane.setOnMousePressed(event -> {
             if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
-                double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
-                maxlat.setText(String.valueOf(latLon[0]));
-                minlon.setText(String.valueOf(latLon[1]));
+                if(event.getButton().equals(MouseButton.PRIMARY)) {
+                    selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
+                    double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
+                    maxlat.setText(String.valueOf(latLon[0]));
+                    minlon.setText(String.valueOf(latLon[1]));
+                }
             }
         });
         mapPane.setOnMouseDragged(event -> {
             if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                selection.render(event.getSceneX(), event.getSceneY() - 25);
-                double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
-                minlat.setText(String.valueOf(latLon[0]));
-                maxlon.setText(String.valueOf(latLon[1]));
+                if(event.getButton().equals(MouseButton.PRIMARY)) {
+                    selection.render(event.getSceneX(), event.getSceneY() - 25);
+                    double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
+                    minlat.setText(String.valueOf(latLon[0]));
+                    maxlon.setText(String.valueOf(latLon[1]));
+                }
             }
         });
         mapPane.setOnMouseReleased(event -> {
-            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                mapPane.getChildren().remove(selection.getRectangle());
+            if(event.getButton().equals(MouseButton.PRIMARY)) {
+                if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
+                    mapPane.getChildren().remove(selection.getRectangle());
+                }
             }
         });
+
+        // Create operators for zoom and drag on map
+        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
+        AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
     }
 
     public String[] generateOsmosisCommands() {
@@ -143,8 +150,11 @@ public class MainController implements Initializable {
                 " left=" + minlon.getText() +
                 " bottom=" + minlat.getText() +
                 " right=" + maxlon.getText();
-        String commandWays = "osmosis --read-pbf " + pbfFile + boundingBox;
-        String commandCities = "osmosis --read-pbf " + pbfFile + boundingBox;
+        String commandWays = "osmosis --read-pbf " + pbfFile
+                // assuming user has not given bounds yet
+                + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
+        String commandCities = "osmosis --read-pbf " + pbfFile
+                + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
         int nbPlace = 0, nbRoad = 0;
         String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
         ObservableList choices = importChoices.getChildren();
@@ -202,17 +212,15 @@ public class MainController implements Initializable {
 
     public void load() {
 
-        if(!task.isRunning()) {
+        if(!task.isRunning()) {/*
             log("starting filtering data with osmosis", Log.LogLevels.INFO);
             String[] commands = generateOsmosisCommands();
             for(String command : commands) {
                 shell.exec(command);
-            }
+            }*/
             //log("starting reading data from file, please wait...", Log.LogLevels.INFO);
             new Thread(task).start(); // alternatively use ExecutorService
         }
-
-        //shell.exec("osmosis");
     }
 
     public void drawGraph() {
@@ -228,14 +236,14 @@ public class MainController implements Initializable {
         // draw roads
         for(Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
-            //if(n1 != null) {
+            if(n1 != null) {
                 int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
                 double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
                 double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
                 for (Long j : g.getAdjList().get(i)) {
                     Node n2 = g.getNodes().get(j);
 
-                    //if (n2 != null) {
+                    if (n2 != null) {
                         int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
                         double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
                         double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
@@ -244,9 +252,9 @@ public class MainController implements Initializable {
                         line.setStroke(Color.LIGHTYELLOW);
                         line.setStrokeWidth(0.3);
                         mapPane.getChildren().add(line);
-                    //}
+                    }
                 }
-            //}
+            }
         }
 
         // draw cities

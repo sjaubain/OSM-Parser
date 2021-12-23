@@ -1,4 +1,4 @@
-package heig.osmparser.drawing;
+package heig.osmparser.controllers;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;

@@ -3,98 +3,77 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0"
-            prefWidth="1100.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/16"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
+<AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0" prefWidth="1100.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
     <children>
-        <MenuBar prefHeight="28.0" prefWidth="1100.0" AnchorPane.bottomAnchor="670.0" AnchorPane.leftAnchor="0.0"
-                 AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <MenuBar prefHeight="28.0" prefWidth="1100.0" AnchorPane.bottomAnchor="670.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Close"/>
+                        <MenuItem mnemonicParsing="false" text="Close" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete"/>
+                        <MenuItem mnemonicParsing="false" text="Delete" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About"/>
+                        <MenuItem mnemonicParsing="false" text="About" />
                     </items>
                 </Menu>
             </menus>
         </MenuBar>
-        <SplitPane dividerPositions="1.0" layoutX="7.0" layoutY="30.0" AnchorPane.bottomAnchor="0.0"
-                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+        <SplitPane dividerPositions="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
             <items>
-                <AnchorPane>
+                <AnchorPane fx:id="leftPane">
                     <children>
-                        <ListView fx:id="logsListView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                  AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="530.0">
+                        <ListView fx:id="logsListView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="530.0">
 
                         </ListView>
-                        <Pane fx:id="logsPane" layoutY="468.0" prefHeight="175.0" prefWidth="200.0"
-                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                              AnchorPane.topAnchor="495.0">
+                        <Pane fx:id="logsPane" layoutY="468.0" prefHeight="175.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="495.0">
                             <children>
-                                <ToolBar layoutX="-7.0" maxHeight="35.0" minHeight="28.0" prefHeight="35.0"
-                                         prefWidth="905.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                         AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="173.0">
+                                <ToolBar layoutX="-7.0" maxHeight="35.0" minHeight="28.0" prefHeight="35.0" prefWidth="905.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="173.0">
                                     <items>
-                                        <Button fx:id="btnReduceLogs" maxHeight="15.0" maxWidth="15.0" minHeight="15.0"
-                                                minWidth="15.0" mnemonicParsing="false" prefHeight="15.0"
-                                                prefWidth="15.0" text="" translateX="10.0"/>
-                                        <Label text="logs" translateX="12.0"/>
-                                        <Label text="Action :" translateX="25.0"/>
-                                        <RadioButton fx:id="actionAreaSelection" mnemonicParsing="false"
-                                                     text="Area Selection" translateX="25.0">
+                                        <Button fx:id="btnReduceLogs" maxHeight="15.0" maxWidth="15.0" minHeight="15.0" minWidth="15.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="15.0" text="" translateX="10.0" />
+                                        <Label text="logs" translateX="12.0" />
+                                        <Label text="Action :" translateX="25.0" />
+                                        <RadioButton fx:id="actionAreaSelection" mnemonicParsing="false" text="Area Selection" translateX="25.0">
                                             <toggleGroup>
-                                                <ToggleGroup fx:id="action"/>
+                                                <ToggleGroup fx:id="action" />
                                             </toggleGroup>
                                         </RadioButton>
-                                        <RadioButton fx:id="actionDijkstra" mnemonicParsing="false"
-                                                     text="Shortest Paths" toggleGroup="$action" translateX="25.0"/>
-                                        <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#load"
-                                                prefHeight="15.0" prefWidth="40.0" text="load" translateX="35.0"/>
+                                        <RadioButton fx:id="actionDijkstra" mnemonicParsing="false" text="Shortest Paths" toggleGroup="$action" translateX="25.0" />
+                                        <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#load" prefHeight="15.0" prefWidth="40.0" text="load" translateX="35.0" />
                                     </items>
                                 </ToolBar>
                             </children>
                         </Pane>
-                        <Pane fx:id="mapPane" layoutX="1.0" prefHeight="496.0" prefWidth="890.0"
-                              AnchorPane.bottomAnchor="175.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                              AnchorPane.topAnchor="0.0"/>
+                        <Pane fx:id="mapPane" layoutY="0" prefHeight="521.0" prefWidth="892.0" AnchorPane.bottomAnchor="175.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                     </children>
                 </AnchorPane>
                 <AnchorPane minWidth="200.0">
                     <children>
-                        <TextField fx:id="minlon" layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0"
-                                   prefHeight="20.0" prefWidth="124.0" text="0.0"/>
-                        <TextField fx:id="maxlat" layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0"
-                                   prefHeight="20.0" prefWidth="124.0" text="0.0"/>
-                        <TextField fx:id="maxlon" layoutX="51.0" layoutY="60.0" maxHeight="20.0" minHeight="20.0"
-                                   prefHeight="20.0" prefWidth="124.0" text="0.0"/>
-                        <TextField fx:id="minlat" layoutX="51.0" layoutY="85.0" maxHeight="20.0" minHeight="20.0"
-                                   prefHeight="20.0" prefWidth="124.0" text="0.0"/>
-                        <Label alignment="CENTER" layoutX="10.0" layoutY="14.0" text="minlon"/>
-                        <Label alignment="CENTER" layoutX="10.0" layoutY="37.0" text="maxlat"/>
-                        <Label alignment="CENTER" layoutX="10.0" layoutY="62.0" text="maxlon"/>
-                        <Label alignment="CENTER" layoutX="10.0" layoutY="87.0" text="minlat"/>
-                        <VBox fx:id="importChoices" layoutX="14.0" layoutY="159.0" prefHeight="105.0" prefWidth="190.0"
-                              AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="159.0">
+                        <TextField fx:id="minlon" layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
+                        <TextField fx:id="maxlat" layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
+                        <TextField fx:id="maxlon" layoutX="51.0" layoutY="60.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
+                        <TextField fx:id="minlat" layoutX="51.0" layoutY="85.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="14.0" text="minlon" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="37.0" text="maxlat" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="62.0" text="maxlon" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="87.0" text="minlat" />
+                        <VBox fx:id="importChoices" layoutX="14.0" layoutY="159.0" prefHeight="105.0" prefWidth="190.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="159.0">
                             <children>
-                                <RadioButton fx:id="placeIcity" mnemonicParsing="false" text="cities"/>
-                                <RadioButton fx:id="placeItown" mnemonicParsing="false" text="towns"/>
-                                <RadioButton fx:id="placeIvillage" mnemonicParsing="false" text="villages"/>
-                                <RadioButton fx:id="highwayIprimary" mnemonicParsing="false" text="primary roads"/>
-                                <RadioButton fx:id="highwayIsecondary" mnemonicParsing="false" text="secondary roads"/>
-                                <RadioButton fx:id="highwayItertiary" mnemonicParsing="false" text="tertiary roads"/>
+                                <RadioButton fx:id="placeIcity" mnemonicParsing="false" text="cities" />
+                                <RadioButton fx:id="placeItown" mnemonicParsing="false" text="towns" />
+                                <RadioButton fx:id="placeIvillage" mnemonicParsing="false" text="villages" />
+                                <RadioButton fx:id="highwayIprimary" mnemonicParsing="false" text="primary roads" />
+                                <RadioButton fx:id="highwayIsecondary" mnemonicParsing="false" text="secondary roads" />
+                                <RadioButton fx:id="highwayItertiary" mnemonicParsing="false" text="tertiary roads" />
                             </children>
                         </VBox>
-                        <Label layoutX="86.0" layoutY="130.0" text="IMPORT"/>
-                        <Label layoutX="86.0" layoutY="285.0" text="EXPORT"/>
+                        <Label layoutX="86.0" layoutY="130.0" text="IMPORT" />
+                        <Label layoutX="86.0" layoutY="285.0" text="EXPORT" />
                     </children>
                 </AnchorPane>
             </items>

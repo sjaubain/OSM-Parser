@@ -53,7 +53,6 @@ public class Parser {
                     //TODO add all tags from the node as a list of Strings (can extract whatever we want furthermore !!!!!)
                     //TODO add additive information depending on context (city name, population,...)
                     long n = Long.parseLong(element.getAttribute("id"));
-
                     double lat = Double.parseDouble(element.getAttribute("lat"));
                     double lon = Double.parseDouble(element.getAttribute("lon"));
                     int pop = 0;
@@ -64,9 +63,18 @@ public class Parser {
                         if (child.getNodeType() == Node.ELEMENT_NODE) {
                             Element element1 = (Element) child;
                             if(element1.getAttribute("k").equals("population")) {
-                                pop = Integer.parseInt(element1.getAttribute("v") == "" ? "0" : element1.getAttribute("v"));
-                                if(pop > g.getMaxPopulation()) {
-                                    g.setMaxPopulation(pop);
+                                String val = element1.getAttribute("v");
+                                boolean validPopFormat = !val.isEmpty();
+                                for(int k = 0; k < val.length(); ++k) {
+                                    if(!Character.isDigit(val.charAt(k))) {
+                                        validPopFormat = false; break;
+                                    }
+                                }
+                                if(validPopFormat) {
+                                    pop = Integer.parseInt(val);
+                                    if(pop > g.getMaxPopulation()) {
+                                        g.setMaxPopulation(pop);
+                                    }
                                 }
                             }
                         }
@@ -74,7 +82,9 @@ public class Parser {
                     g.addCity(new heig.osmparser.model.Node(n, lat, lon, pop));
                 }
             }
-        }  catch (ParserConfigurationException | SAXException | IOException e) {}
+        }  catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Graph toGraph(String filename) {
@@ -153,7 +163,9 @@ public class Parser {
                 }
             }
             return g;
-        } catch (ParserConfigurationException | SAXException | IOException e) {}
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
