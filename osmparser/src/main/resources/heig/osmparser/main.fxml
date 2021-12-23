@@ -44,7 +44,7 @@
                                             </toggleGroup>
                                         </RadioButton>
                                         <RadioButton fx:id="actionDijkstra" mnemonicParsing="false" text="Shortest Paths" toggleGroup="$action" translateX="25.0" />
-                                        <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#load" prefHeight="15.0" prefWidth="40.0" text="load" translateX="35.0" />
+                                        <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#loadGraph" prefHeight="25.0" prefWidth="67.0" text="load" translateX="35.0" />
                                     </items>
                                 </ToolBar>
                             </children>
@@ -73,7 +73,8 @@
                             </children>
                         </VBox>
                         <Label layoutX="86.0" layoutY="130.0" text="IMPORT" />
-                        <Label layoutX="86.0" layoutY="285.0" text="EXPORT" />
+                        <Label layoutX="86.0" layoutY="327.0" text="EXPORT" />
+                        <Button fx:id="btnImport" layoutX="80.0" layoutY="277.0" mnemonicParsing="false" onAction="#importData" text="import" />
                     </children>
                 </AnchorPane>
             </items>

@@ -38,8 +38,6 @@ public class MainController implements Initializable {
     @FXML
     private Pane mapPane; // w : 890, h : 496
     @FXML
-    private ScrollPane logsScrollPane;
-    @FXML
     private ListView logsListView;
     @FXML
     private TextField minlat, minlon, maxlat, maxlon;
@@ -59,10 +57,9 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
-        logsListView.toFront();
-        // in order the map pane not overflows the logs pane
-        logsPane.toFront();
+        logsPane.toFront(); logsPane.setPickOnBounds(false);
         actionAreaSelection.setSelected(true);
+        mapPane.toBack();
 
         g = new Graph();
 
@@ -71,11 +68,16 @@ public class MainController implements Initializable {
         task = new Task() {
             @Override
             protected Integer call() throws Exception {
-                Parser parser = new Parser();
-                g = parser.toGraph("./input/ways.osm");
-                parser.addCities(g, "./input/cities.osm");
-                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-                return 0;
+                try {
+                    Parser parser = new Parser();
+                    g = parser.toGraph("./input/ways.osm");
+                    parser.addCities(g, "./input/cities.osm");
+                    //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+                    return 0;
+                } catch(Exception e) {
+                    log(e.getMessage(), Log.LogLevels.ERROR);
+                    return -1;
+                }
             }
         };
 
@@ -210,16 +212,17 @@ public class MainController implements Initializable {
         return latLon;
     }
 
-    public void load() {
+    public void loadGraph() {
+        if(!task.isRunning()) {
+            new Thread(task).start();
+        }
+    }
 
-        if(!task.isRunning()) {/*
-            log("starting filtering data with osmosis", Log.LogLevels.INFO);
-            String[] commands = generateOsmosisCommands();
-            for(String command : commands) {
-                shell.exec(command);
-            }*/
-            //log("starting reading data from file, please wait...", Log.LogLevels.INFO);
-            new Thread(task).start(); // alternatively use ExecutorService
+    public void importData() {
+        log("starting filtering data with osmosis", Log.LogLevels.INFO);
+        String[] commands = generateOsmosisCommands();
+        for(String command : commands) {
+            shell.exec(command);
         }
     }
 
@@ -285,11 +288,12 @@ public class MainController implements Initializable {
 
     public void log(String msg, Log.LogLevels logLevel) {
 
-        Text newText = new Text(msg);
+        TextField newText = new TextField(msg);
+        newText.setText(msg); newText.setEditable(false);
         if(logLevel.equals(Log.LogLevels.INFO))
-            newText.setFill(Color.DARKGREEN);
+            newText.setStyle("-fx-text-fill: green");
         else
-            newText.setFill(Color.RED);
+            newText.setStyle("-fx-text-fill: red");
 
         logsListView.getItems().add(logsListView.getItems().size(), newText);
         logsListView.scrollTo(logsListView.getItems().size() - 1);

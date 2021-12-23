@@ -36,7 +36,7 @@ public class Parser {
     // --wx cities.osm
     public final static Logger LOG = Logger.getLogger(Parser.class.getName());
 
-    public void addCities(Graph g, String filename) {
+    public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
@@ -84,6 +84,7 @@ public class Parser {
             }
         }  catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
+            throw e;
         }
     }
 

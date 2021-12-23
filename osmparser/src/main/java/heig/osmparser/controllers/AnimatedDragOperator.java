@@ -12,7 +12,6 @@ public class AnimatedDragOperator {
         pane.setOnMousePressed(e -> {
             capturedX = e.getSceneX() - pane.getTranslateX();
             capturedY = e.getSceneY() - pane.getTranslateY();
-            System.out.println(pane.getBoundsInParent().getMinX());
             pane.getScene().setCursor(Cursor.CLOSED_HAND);
         });
 

@@ -37,3 +37,23 @@
     -fx-font-family: "DejaVu Sans Mono";
     -fx-font-size: 11;
 }
+
+.button {
+    -fx-font-family: "DejaVu Sans Mono";
+    -fx-font-size: 11;
+}
+
+.text-field {
+    -fx-text-box-border: transparent;
+    -fx-pref-height: 11px;
+}
+
+.text-field {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-background-insets: 0;
+    -fx-padding: 1 3 1 3;
+}
+
+.text-field:focused {
+    -fx-text-box-border: transparent;
+}

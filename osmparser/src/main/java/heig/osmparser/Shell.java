@@ -19,7 +19,7 @@ public class Shell {
     }
 
     public void exec(String command) {
-        //new Thread(() -> {
+        new Thread(() -> {
             Process process;
             try {
                 System.out.println(command);
@@ -27,8 +27,12 @@ public class Shell {
                     controller.log(command, Log.LogLevels.INFO);
                 });
                 if (isWindows) {
-                    process = Runtime.getRuntime().exec("cmd /c " + command);
+                    //process = Runtime.getRuntime().exec(""cmd /c " + command");
+                    ProcessBuilder builder = new ProcessBuilder("CMD", "/C",  command);
+                    builder.redirectErrorStream(true);
+                    process = builder.start();
                 } else {
+                    //final Process exec = new ProcessBuilder("bash", "-c", query).start();
                     process = Runtime.getRuntime().exec("sh -c " + command);
                 }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -41,11 +45,12 @@ public class Shell {
                     });
                 }
                 reader.close();
+                process.waitFor();
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     controller.log(e.getMessage(), Log.LogLevels.ERROR);
                 });
             }
-        //}).start();
+        }).start();
     }
 }
