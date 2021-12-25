@@ -13,27 +13,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Parser {
 
-    /**
-     * FOR THE WAYS : IMPORTANT : --un allows to retrieve only nodes that belongs to ways !!!!
-     * osmosis --read-pbf switzerland-latest.osm.pbf --bounding-box top=46.8773 left=6.4021 bottom=46.6723 right=6.7207 --tf accept-ways highway=primary,secondary --tf accept-nodes --tf reject-relations --un --wx ways.osm
-     * FOR THE CITIES
-     * osmosis --read-pbf switzerland-latest.osm.pbf --bounding-box top=46.8773 left=6.4021 bottom=46.6723 right=6.7207 --tf reject-ways --tf accept-nodes place=town,village,city --tf reject-relations --wx cities.osm
-     *
-     * GET NODE BY ID WITH OVERPASS API
-     * https://overpass-api.de/api/interpreter?data=[out:json];%20(%20node(172282);%20);%20(._;%3E;);%20out;
-     */
-    // typical osmosis usage example
-    // osmosis
-    // --bounding-box top=46.7961 left=6.617521 bottom=46.7687 right=6.6550
-    // --read-pbf switzerland-latest.osm.pbf
-    // --tf accept-ways highway=primary
-    // --tf accept-nodes place=city,town,village
-    // --tf reject-relations
-    // --wx cities.osm
     public final static Logger LOG = Logger.getLogger(Parser.class.getName());
 
     public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
@@ -50,8 +36,6 @@ public class Parser {
                 Node node = nodes.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
-                    //TODO add all tags from the node as a list of Strings (can extract whatever we want furthermore !!!!!)
-                    //TODO add additive information depending on context (city name, population,...)
                     long n = Long.parseLong(element.getAttribute("id"));
                     double lat = Double.parseDouble(element.getAttribute("lat"));
                     double lon = Double.parseDouble(element.getAttribute("lon"));
@@ -98,6 +82,8 @@ public class Parser {
             Document doc = db.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
+            LOG.log(Level.FINE, "parsing bounds");
+
             NodeList nodes = doc.getElementsByTagName("bounds");
             Element bnds = (Element) nodes.item(0);
             g.setBounds(new double[]{
@@ -107,10 +93,12 @@ public class Parser {
                     Double.parseDouble(bnds.getAttribute("minlat"))
             });
 
+            LOG.log(Level.FINE, "parsing ways");
+
             // connect all nodes with ways of type route
-            HashMap<String, Boolean> existingNodes = new HashMap<>();
+            HashMap<String, Boolean> registeredNodes = new HashMap<>();
             nodes = doc.getElementsByTagName("way");
-            //TODO manage exeptions
+
             for(int i = 0; i < nodes.getLength(); ++i) {
                 //TODO filter elements that contain a certain tag by factorizing in a function
                 Node node = nodes.item(i);
@@ -122,6 +110,7 @@ public class Parser {
                         Node child = children.item(j);
                         if (child.getNodeType() == Node.ELEMENT_NODE) {
                             Element element1 = (Element) child;
+                            // just keep first and last node of the way
                             if(element1.getAttribute("k").equals("highway")) {
                                 children = element.getElementsByTagName("nd");
                                 // first node of the road
@@ -130,12 +119,9 @@ public class Parser {
                                 // last node of the road
                                 long n2 = Long.parseLong(((Element)children.item(children.getLength() - 1))
                                         .getAttribute("ref"));
-                                existingNodes.put(String.valueOf(n1), true);
-                                existingNodes.put(String.valueOf(n2), true);
-/*
-                                g.addNode(OverpassAPIClient.getNodeById(n1));
-                                g.addNode(OverpassAPIClient.getNodeById(n2));
-*/
+                                registeredNodes.put(String.valueOf(n1), true);
+                                registeredNodes.put(String.valueOf(n2), true);
+
                                 g.addEdge(n1, n2, false);
                                 g.addEdge(n2, n1, false);
                                 break;
@@ -144,6 +130,8 @@ public class Parser {
                     }
                 }
             }
+
+            LOG.log(Level.FINE, "parsing nodes");
 
             // retrieve all nodes
             nodes = doc.getElementsByTagName("node");
@@ -155,7 +143,7 @@ public class Parser {
                     Element element = (Element) node;
                     //TODO add additive information depending on context (city name, population,...)
                     String id = element.getAttribute("id");
-                    if(existingNodes.containsKey(id)) {
+                    if(registeredNodes.containsKey(id)) {
                         long n = Long.parseLong(element.getAttribute("id"));
                         double lat = Double.parseDouble(element.getAttribute("lat"));
                         double lon = Double.parseDouble(element.getAttribute("lon"));
@@ -163,6 +151,27 @@ public class Parser {
                     }
                 }
             }
+
+            LOG.log(Level.FINE, "resolving missing nodes");
+
+            // remove from adjList all node ids that have not been found in the file
+            // because we must know the coordinates of such nodes.
+            HashMap<Long, List<Long>> curAdjList = g.getAdjList();
+            HashMap<Long, List<Long>> newAdjList = new HashMap<>();
+
+            // reconstruct the new cleaned adjList with only the ids whose nodes
+            // can be retrieved
+            for(long id : curAdjList.keySet()) {
+                if(g.getNodes().containsKey(id)) {
+                    newAdjList.put(id, new LinkedList<>());
+                    for(long id2 : curAdjList.get(id)) {
+                        if(g.getNodes().containsKey(id2)) {
+                            newAdjList.get(id).add(id2);
+                        }
+                    }
+                }
+            }
+            g.setAdjList(newAdjList);
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

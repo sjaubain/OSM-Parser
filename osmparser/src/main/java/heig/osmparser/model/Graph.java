@@ -183,4 +183,8 @@ public class Graph {
     public void setMaxPopulation(int maxPopulation) {
         this.maxPopulation = maxPopulation;
     }
+
+    public void setAdjList(HashMap<Long, List<Long>> adjList) {
+        this.adjList = adjList;
+    }
 }

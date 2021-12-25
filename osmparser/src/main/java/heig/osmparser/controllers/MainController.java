@@ -65,7 +65,9 @@ public class MainController implements Initializable {
         mapPane.toBack();
 
         g = new Graph();
+        Parser parser = new Parser();
 
+        g = parser.toGraph("./input/ways.osm");
         shell = new Shell(this);
 
         task = new Task() {
@@ -145,8 +147,8 @@ public class MainController implements Initializable {
         });
 
         // Create operators for zoom and drag on map
-        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
-        AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
+        //AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
+        //AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
     }
 
     public String[] generateOsmosisCommands() {
