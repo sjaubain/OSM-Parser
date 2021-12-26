@@ -49,7 +49,7 @@
                                 </ToolBar>
                             </children>
                         </Pane>
-                        <Pane fx:id="mapPane" layoutY="0" prefHeight="521.0" prefWidth="892.0" AnchorPane.bottomAnchor="175.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Pane fx:id="mapPane"/>
                     </children>
                 </AnchorPane>
                 <AnchorPane minWidth="200.0">
@@ -78,11 +78,12 @@
                                 <RadioButton fx:id="highwayItertiary" mnemonicParsing="false" text="tertiary roads" />
                                 <RadioButton fx:id="highwayItertiary_link" mnemonicParsing="false" text="(tertiary link)" textFill="#757575" />
                                 <RadioButton fx:id="highwayIresidential" mnemonicParsing="false" text="residential" />
+                                <RadioButton fx:id="highwayIunclassified" mnemonicParsing="false" text="unclassified" />
                             </children>
                         </VBox>
                         <Label layoutX="86.0" layoutY="130.0" text="IMPORT" />
                         <Label layoutX="86.0" layoutY="468.0" text="EXPORT" />
-                        <Button fx:id="btnImport" layoutX="79.0" layoutY="424.0" mnemonicParsing="false" onAction="#importData" text="import" />
+                        <Button fx:id="btnImport" layoutX="79.0" layoutY="435.0" mnemonicParsing="false" onAction="#importData" text="import" />
                     </children>
                 </AnchorPane>
             </items>

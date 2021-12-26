@@ -166,6 +166,7 @@ public class Parser {
 
             LOG.log(Level.INFO, "resolving unconnected ways");
 
+            // TODO : a lot of factorization and exception handling
             // first retrieve again all the ways
             nodes = doc.getElementsByTagName("way");
             for (int i = 0; i < nodes.getLength(); ++i) {

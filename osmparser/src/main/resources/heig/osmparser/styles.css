@@ -1,8 +1,10 @@
+#leftPane {
+    -fx-background-color: #1f1e1e;
+}
 
 #mapPane {
     -fx-border-radius: 2px;
-    -fx-border-color: #1f1e1e;
-    -fx-background-color: #1f1e1e;
+    -fx-background-color: #000000;
 }
 
 #btnReduceLogs {

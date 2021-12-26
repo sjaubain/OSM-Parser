@@ -51,6 +51,7 @@ public class MainController implements Initializable {
     @FXML
     private VBox importChoices;
 
+    private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
     private Box selection;
     private Task<Integer> task;
@@ -291,26 +292,39 @@ public class MainController implements Initializable {
 
         //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
-        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner
-        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
-        int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])}; // times -1 because y axis is in reverse side (downside)
+        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner coordinates
+        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner coordinates
+        // multiplied by -1 because y-axis is in reverse side (downside)
+        int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
+        double ratioHoverW = mapShape[1] / (double) mapShape[0];
+        if(ratioHoverW > 1) {
+            mapPane.setTranslateX((SCREEN_WIDTH - 400 / ratioHoverW) / 2);
+            mapPane.setTranslateY((SCREEN_HEIGHT - 400) / 2);
+            mapPane.setPrefHeight(400); mapPane.setPrefWidth(400 / ratioHoverW);
+        } else {
+            mapPane.setTranslateX((SCREEN_WIDTH - 400) / 2);
+            mapPane.setTranslateY((SCREEN_HEIGHT - 400 * ratioHoverW) / 2);
+            mapPane.setPrefHeight(400 * ratioHoverW); mapPane.setPrefWidth(400);
+        }
+        double factorX = mapPane.getPrefWidth();
+        double factorY = mapPane.getPrefHeight();
 
         // draw roads
+        int[] nodeShape;
         for(Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
             if(n1 != null) {
-                int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
-                double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-                double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
-
+                nodeShape = Maths.latsToMN03(n1.getLat(), n1.getLon());
+                double startX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
+                double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 
                 for (Pair<Long, Double> p : (g.getAdjList().get(i))) {
                     Node n2 = g.getNodes().get(p.getKey());
 
                     if (n2 != null) {
-                        int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
-                        double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-                        double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+                        nodeShape = Maths.latsToMN03(n2.getLat(), n2.getLon());
+                        double endX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
+                        double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
                         line.setStroke(Color.LIGHTYELLOW);
@@ -321,9 +335,9 @@ public class MainController implements Initializable {
 
                 //TODO : make a function addNodeCircle
                 Circle circle = new Circle(0.1, Color.WHITE);
-                circle.setLayoutX((nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double)mapShape[0]);
+                circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0]);
                 // times -1 because y axis is in reverse side (downside)
-                circle.setLayoutY(-1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double)mapShape[1]);
+                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1]);
                 circle.setOnMouseClicked(e -> {
                     for(Circle c : nodesCircles.values()) {
                         c.setFill(Color.WHITE);
@@ -376,9 +390,9 @@ public class MainController implements Initializable {
                 Circle circle = new Circle(radius, c);
                 int[] nodeShape = Maths.latsToMN03(n.getLat(), n.getLon());
 
-                circle.setLayoutX((nodeShape[0] - shape1[0]) * mapPane.getPrefWidth() / (double)mapShape[0]);
+                circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double)mapShape[0]);
                 // times -1 because y axis is in reverse side (downside)
-                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * mapPane.getPrefHeight() / (double)mapShape[1]);
+                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * factorY / (double)mapShape[1]);
                 mapPane.getChildren().add(circle);
             });
         }
