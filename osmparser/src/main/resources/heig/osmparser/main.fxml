@@ -67,14 +67,21 @@
                                 <RadioButton fx:id="placeIcity" mnemonicParsing="false" text="cities" />
                                 <RadioButton fx:id="placeItown" mnemonicParsing="false" text="towns" />
                                 <RadioButton fx:id="placeIvillage" mnemonicParsing="false" text="villages" />
+                                <RadioButton fx:id="highwayImotorway" mnemonicParsing="false" text="motorway" />
+                                <RadioButton fx:id="highwayImotorway_link" mnemonicParsing="false" text="(motorway link)" textFill="#757575" />
+                                <RadioButton fx:id="highwayItrunk" mnemonicParsing="false" text="trunk" />
+                                <RadioButton fx:id="highwayItrunk_link" mnemonicParsing="false" text="(trunk link)" textFill="#757575" />
                                 <RadioButton fx:id="highwayIprimary" mnemonicParsing="false" text="primary roads" />
+                                <RadioButton fx:id="highwayIprimary_link" mnemonicParsing="false" text="(primary link)" textFill="#757575" />
                                 <RadioButton fx:id="highwayIsecondary" mnemonicParsing="false" text="secondary roads" />
+                                <RadioButton fx:id="highwayIsecondary_link" mnemonicParsing="false" text="(secondary link)" textFill="#757575" />
                                 <RadioButton fx:id="highwayItertiary" mnemonicParsing="false" text="tertiary roads" />
+                                <RadioButton fx:id="highwayItertiary_link" mnemonicParsing="false" text="(tertiary link)" textFill="#757575" />
                             </children>
                         </VBox>
                         <Label layoutX="86.0" layoutY="130.0" text="IMPORT" />
-                        <Label layoutX="86.0" layoutY="327.0" text="EXPORT" />
-                        <Button fx:id="btnImport" layoutX="80.0" layoutY="277.0" mnemonicParsing="false" onAction="#importData" text="import" />
+                        <Label layoutX="86.0" layoutY="434.0" text="EXPORT" />
+                        <Button fx:id="btnImport" layoutX="79.0" layoutY="399.0" mnemonicParsing="false" onAction="#importData" text="import" />
                     </children>
                 </AnchorPane>
             </items>

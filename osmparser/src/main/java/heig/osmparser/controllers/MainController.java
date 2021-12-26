@@ -11,11 +11,13 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -27,6 +29,7 @@ import javafx.scene.text.Text;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -54,7 +57,8 @@ public class MainController implements Initializable {
     private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
-    private Node from, to;
+    private HashMap<Long, Circle> nodesCircles;
+    private Node selectedNode;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -64,25 +68,24 @@ public class MainController implements Initializable {
         actionAreaSelection.setSelected(true);
         mapPane.toBack();
 
+        nodesCircles = new HashMap<>();
         g = new Graph();
-        Parser parser = new Parser();
 
-        g = parser.toGraph("./input/ways.osm");
         shell = new Shell(this);
 
         task = new Task() {
             @Override
             protected Integer call() throws Exception {
-                try {
-                    Parser parser = new Parser();
-                    g = parser.toGraph("./input/ways.osm");
-                    parser.addCities(g, "./input/cities.osm");
-                    //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-                    return 0;
-                } catch(Exception e) {
-                    log(e.getMessage(), Log.LogLevels.ERROR);
-                    return -1;
-                }
+            try {
+                Parser parser = new Parser();
+                g = parser.toGraph("./input/ways.osm");
+                parser.addCities(g, "./input/cities.osm");
+                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+                return 0;
+            } catch(Exception e) {
+                log(e.getMessage(), Log.LogLevels.ERROR);
+                return -1;
+            }
             }
         };
 
@@ -105,7 +108,8 @@ public class MainController implements Initializable {
             current_action = ACTION_PERFORM.DIJKSTRA;
         });
 
-        mapPane.setOnMousePressed(event -> {
+        /*
+        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             //TODO this event is not triggered because it is shadowed by the scroll and drag events
             if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                 if(event.getButton().equals(MouseButton.PRIMARY)) {
@@ -117,18 +121,24 @@ public class MainController implements Initializable {
             } else if(current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
                 if(firstNodeChoosen) {
                     System.out.println("dijkstra");
-                    from = g.closestNodeToCoords(event.getX(), event.getY());
-                    firstNodeChoosen = false;
-                    g.dijkstra(from.getId());
+                    if(selectedNode != null) {
+                        from = selectedNode;
+                        firstNodeChoosen = false;
+                        g.dijkstra(from.getId());
+                    }
                 } else {
-                    to = g.closestNodeToCoords(event.getX(), event.getY());
-                    firstNodeChoosen = true;
-                    //TODO wait that dijkstra is done
-                    drawPath(g.getShortestPath(to));
+                    if(selectedNode != null) {
+                        to = selectedNode;
+                        firstNodeChoosen = true;
+                        //TODO wait that dijkstra is done
+                        System.out.println(g.getShortestPath(to).size());
+                        selectedNode = null;
+                        drawPath(g.getShortestPath(to));
+                    }
                 }
             }
         });
-        mapPane.setOnMouseDragged(event -> {
+        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                 if(event.getButton().equals(MouseButton.PRIMARY)) {
                     selection.render(event.getSceneX(), event.getSceneY() - 25);
@@ -138,17 +148,17 @@ public class MainController implements Initializable {
                 }
             }
         });
-        mapPane.setOnMouseReleased(event -> {
+        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if(event.getButton().equals(MouseButton.PRIMARY)) {
                 if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                     mapPane.getChildren().remove(selection.getRectangle());
                 }
             }
-        });
+        });*/
 
         // Create operators for zoom and drag on map
-        //AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
-        //AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
+        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
+        AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
     }
 
     public String[] generateOsmosisCommands() {
@@ -244,6 +254,8 @@ public class MainController implements Initializable {
         }
     }
 
+    private Group shortestPathLines;
+
     public void drawPath(List<Node> nodes) {
 
         //default metric for MN03 is centimeter
@@ -252,6 +264,8 @@ public class MainController implements Initializable {
         int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
         int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])}; // times -1 because y axis is in reverse side (downside)
 
+        if(shortestPathLines != null) mapPane.getChildren().remove(shortestPathLines);
+        shortestPathLines = new Group();
         for(int i = 0; i < nodes.size() - 1; ++i) {
 
             Node n1 = nodes.get(i), n2 = nodes.get(i + 1);
@@ -264,9 +278,10 @@ public class MainController implements Initializable {
 
             Line line = new Line(startX, startY, endX, endY);
             line.setStroke(Color.BLUE);
-            line.setStrokeWidth(0.4);
-            mapPane.getChildren().add(line);
+            line.setStrokeWidth(0.1);
+            shortestPathLines.getChildren().add(line);
         }
+        mapPane.getChildren().add(shortestPathLines);
     }
 
     public void drawGraph() {
@@ -286,6 +301,8 @@ public class MainController implements Initializable {
                 int[] nodeShape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
                 double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
                 double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+
+
                 for (Long j : g.getAdjList().get(i)) {
                     Node n2 = g.getNodes().get(j);
 
@@ -296,13 +313,50 @@ public class MainController implements Initializable {
 
                         Line line = new Line(startX, startY, endX, endY);
                         line.setStroke(Color.LIGHTYELLOW);
-                        line.setStrokeWidth(0.3);
+                        line.setStrokeWidth(0.1);
                         mapPane.getChildren().add(line);
                     }
                 }
+
+                //TODO : make a function addNodeCircle
+                Circle circle = new Circle(0.1, Color.WHITE);
+                circle.setLayoutX((nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double)mapShape[0]);
+                // times -1 because y axis is in reverse side (downside)
+                circle.setLayoutY(-1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double)mapShape[1]);
+                circle.setOnMouseClicked(e -> {
+                    for(Circle c : nodesCircles.values()) {
+                        c.setFill(Color.WHITE);
+                    }
+                    circle.setFill(Color.RED);
+                    circle.toFront();
+                    if(current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
+                        selectedNode = n1;
+                        if(firstNodeChoosen) {
+                            System.out.println("dijkstra");
+                            firstNodeChoosen = false;
+                            g.dijkstra(selectedNode.getId());
+                        } else {
+                            firstNodeChoosen = true;
+                            //TODO wait that dijkstra is done
+                            System.out.println(g.getShortestPath(selectedNode).size());
+                            drawPath(g.getShortestPath(selectedNode));
+                        }
+                    }
+                });
+
+                circle.setOnMouseEntered(e -> {
+                    circle.setRadius(circle.getRadius() * 3);
+                });
+
+                circle.setOnMouseExited(e -> {
+                    circle.setRadius(circle.getRadius() / 3);
+                });
+
+                nodesCircles.put(n1.getId(), circle);
+                mapPane.getChildren().add(circle);
             }
         }
-
+        /*
         // draw cities
         int maxPop = g.getMaxPopulation();
         double maxRadius = Math.sqrt(300);
@@ -327,6 +381,7 @@ public class MainController implements Initializable {
                 mapPane.getChildren().add(circle);
             });
         }
+        */
     }
 
     public void log(String msg, Log.LogLevels logLevel) {

@@ -50,9 +50,9 @@ public class Graph {
     }
 
     public double distance(Node n1, Node n2) {
-        int[] shape1 = Maths.latsToMN03(n1.getLat(), n2.getLon());
+        int[] shape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
         int[] shape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
-        int dX = Math.abs(shape2[0] - shape1[0]), dY = Math.abs(shape2[1] - shape1[1]);
+        double dX = Math.abs((double)(shape2[0] - shape1[0])), dY = Math.abs((double)(shape2[1] - shape1[1]));
         return dX * dX + dY * dY;
     }
 
@@ -64,13 +64,13 @@ public class Graph {
         return adjList.containsKey(id);
     }
 
-    public void addEdge(Long n1Id, Long n2Id, boolean nodesMustExist) {
-        if(nodes.containsKey(n1Id) || !nodesMustExist) {
-            if (!adjList.containsKey(n1Id)) {
-                adjList.put(n1Id, new LinkedList<>(Arrays.asList(n2Id)));
-            } else {
-                adjList.get(n1Id).add(n2Id);
-            }
+    public void addEdge(Long n1Id, Long n2Id) {
+
+        if (!adjList.containsKey(n1Id)) {
+            List list = new LinkedList<>(); list.add(n2Id);
+            adjList.put(n1Id, list);
+        } else {
+            adjList.get(n1Id).add(n2Id);
         }
     }
 
@@ -100,17 +100,20 @@ public class Graph {
             pred.put(node, (long)-1);
         }
         // custom min heap
-        PriorityQueue<Pair<Double, Long>> Q = new PriorityQueue<>((a, b) -> (int) (a.getKey() - b.getKey()));
+        PriorityQueue<Pair<Double, Long>> Q = new PriorityQueue<>(Comparator.comparing(Pair::getKey));
         Q.add(new Pair<>(0.0, src));
         while(!Q.isEmpty()) {
             Pair<Double, Long> p = Q.poll();
             long i_id = p.getValue();
             Node i = nodes.get(i_id);
+            //System.out.println("threating node : " + i_id);
             if(i != null) {
                 for (long j_id : adjList.get(i_id)) {
+                    //System.out.println("    with neighbor : " + j_id);
                     Node j = nodes.get(j_id);
                     if(j != null) {
                         double c_ij = distance(i, j);
+                        //System.out.println(c_ij);
                         if(lambda.get(j_id) > lambda.get(i_id) + c_ij) {
                             lambda.replace(j_id, lambda.get(i_id) + c_ij);
                             pred.replace(j_id, i_id);
@@ -122,27 +125,13 @@ public class Graph {
         }
     }
 
-    public Node closestNodeToCoords(double lat, double lon) {
-        double minDist = Double.MAX_VALUE;
-        Node minNode = null;
-        for(long id : adjList.keySet()) {
-            Node n = nodes.get(id);
-            if(n != null) {
-                double curDist = distance(new Node(0, lat, lon, 0), n);
-                if (curDist < minDist) {
-                    minDist = curDist;
-                    minNode = n;
-                }
-            }
-        }
-        return minNode;
-    }
 
     public List<Node> getShortestPath(Node dest) {
         List<Node> ret = new LinkedList<>();
         while(pred.get(dest.getId()) != (long)-1) {
             ret.add(dest); dest = nodes.get(pred.get(dest.getId()));
         }
+        ret.add(dest);
         return ret;
     }
 
