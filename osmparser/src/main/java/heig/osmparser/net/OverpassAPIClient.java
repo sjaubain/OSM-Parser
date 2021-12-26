@@ -47,7 +47,6 @@ public abstract class OverpassAPIClient {
             double lat = jo.get("elements").getAsJsonArray().get(0).getAsJsonObject().get("lat").getAsDouble();
             double lon = jo.get("elements").getAsJsonArray().get(0).getAsJsonObject().get("lon").getAsDouble();
 
-            System.out.println("+1 node");
             return new Node(id, lat, lon, 0);
         } catch (MalformedURLException e) {
             e.printStackTrace();

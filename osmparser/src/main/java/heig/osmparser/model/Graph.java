@@ -18,7 +18,7 @@ public class Graph {
 
     private HashMap<Long, Node> nodes;
 
-    private HashMap<Long, List<Long>> adjList;
+    private HashMap<Long, List<Pair<Long, Double>>> adjList;
 
     private HashMap<Long, Node> cities;
 
@@ -49,28 +49,17 @@ public class Graph {
         }
     }
 
-    public double distance(Node n1, Node n2) {
-        int[] shape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
-        int[] shape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
-        double dX = Math.abs((double)(shape2[0] - shape1[0])), dY = Math.abs((double)(shape2[1] - shape1[1]));
-        return dX * dX + dY * dY;
-    }
-
     public boolean containsNode(long id) {
         return nodes.containsKey(id);
     }
 
-    public boolean adjListContainsNode(long id) {
-        return adjList.containsKey(id);
-    }
-
-    public void addEdge(Long n1Id, Long n2Id) {
+    public void addEdge(Long n1Id, Long n2Id, double cost) {
 
         if (!adjList.containsKey(n1Id)) {
-            List list = new LinkedList<>(); list.add(n2Id);
+            List list = new LinkedList<>(); list.add(new Pair(n2Id, cost));
             adjList.put(n1Id, list);
         } else {
-            adjList.get(n1Id).add(n2Id);
+            adjList.get(n1Id).add(new Pair(n2Id, cost));
         }
     }
 
@@ -81,8 +70,8 @@ public class Graph {
         } else {
             for(Long i : adjList.keySet()) {
                 ret += "successors of Node " + i + " : ";
-                for(Long j : adjList.get(i))
-                    ret += j + " ";
+                for(Pair p : adjList.get(i))
+                    ret += p.getKey() + " ";
                 ret += System.lineSeparator();
             }
         }
@@ -106,14 +95,12 @@ public class Graph {
             Pair<Double, Long> p = Q.poll();
             long i_id = p.getValue();
             Node i = nodes.get(i_id);
-            //System.out.println("threating node : " + i_id);
             if(i != null) {
-                for (long j_id : adjList.get(i_id)) {
-                    //System.out.println("    with neighbor : " + j_id);
+                for (Pair<Long, Double> weightedEdge : adjList.get(i_id)) {
+                    long j_id = weightedEdge.getKey();
                     Node j = nodes.get(j_id);
                     if(j != null) {
-                        double c_ij = distance(i, j);
-                        //System.out.println(c_ij);
+                        double c_ij = weightedEdge.getValue();
                         if(lambda.get(j_id) > lambda.get(i_id) + c_ij) {
                             lambda.replace(j_id, lambda.get(i_id) + c_ij);
                             pred.replace(j_id, i_id);
@@ -135,7 +122,7 @@ public class Graph {
         return ret;
     }
 
-    public HashMap<Long, List<Long>> getAdjList() {
+    public HashMap<Long, List<Pair<Long, Double>>> getAdjList() {
         return adjList;
     }
 
@@ -173,7 +160,7 @@ public class Graph {
         this.maxPopulation = maxPopulation;
     }
 
-    public void setAdjList(HashMap<Long, List<Long>> adjList) {
+    public void setAdjList(HashMap<Long, List<Pair<Long, Double>>> adjList) {
         this.adjList = adjList;
     }
 }

@@ -3,6 +3,7 @@ package heig.osmparser.utils.converters;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.utils.maths.Maths;
+import javafx.util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -31,10 +32,10 @@ public abstract class EPSConverter {
                 if(g.containsNode(i)) {
                     int[] coords1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
                     String coordsStr1 = String.valueOf(coords1[0]) + " " + String.valueOf(coords1[1]);
-                    for (long j : g.getAdjList().get(i)) {
+                    for (Pair<Long, Double> p: g.getAdjList().get(i)) {
                         String line = "4 c\nn " + coordsStr1;
-                        Node n2 = g.getNodes().get(j);
-                        if (g.containsNode(j)) {
+                        Node n2 = g.getNodes().get(p.getKey());
+                        if (g.containsNode(p.getKey())) {
                             int[] coords2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
                             String coordsStr2 = String.valueOf(coords2[0]) + " " + String.valueOf(coords2[1]);
                             line += " m " + coordsStr2 + " l s\n";

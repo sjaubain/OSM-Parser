@@ -1,6 +1,9 @@
 package heig.osmparser.utils.parsers;
 
 import heig.osmparser.model.Graph;
+import heig.osmparser.net.OverpassAPIClient;
+import heig.osmparser.utils.maths.Maths;
+import javafx.util.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -90,6 +93,19 @@ public class Parser {
                     Double.parseDouble(bnds.getAttribute("minlat"))
             });
 
+            // retrieve all used nodes composing ways
+            nodes = doc.getElementsByTagName("node");
+            HashMap<Long, heig.osmparser.model.Node> usedNodes = new HashMap<>();
+            int len = nodes.getLength();
+            for (int i = 0; i < len; i++) {
+                Node node = nodes.item(i);
+                Element element = (Element) node;
+                long n = Long.parseLong(element.getAttribute("id"));
+                double lat = Double.parseDouble(element.getAttribute("lat"));
+                double lon = Double.parseDouble(element.getAttribute("lon"));
+                usedNodes.put(n, new heig.osmparser.model.Node(n, lat, lon, 0));
+            }
+
             LOG.log(Level.INFO, "parsing ways");
 
             // connect all nodes with ways of type route
@@ -111,19 +127,35 @@ public class Parser {
                 registeredNodes.put(String.valueOf(n1), true);
                 registeredNodes.put(String.valueOf(n2), true);
 
-                g.addEdge(n1, n2);
-                g.addEdge(n2, n1);
+                double cost = 0;
+                for(int j = 0; j < children.getLength() - 1; ++j) {
+                    long cur = Long.parseLong(((Element) children.item(j))
+                            .getAttribute("ref"));
+                    long next = Long.parseLong(((Element) children.item(j + 1))
+                            .getAttribute("ref"));
+
+                    if(usedNodes.get(cur) != null && usedNodes.get(next) != null) {
+                        double lat1 = usedNodes.get(cur).getLat();
+                        double lon1 = usedNodes.get(cur).getLon();
+                        double lat2 = usedNodes.get(next).getLat();
+                        double lon2 = usedNodes.get(next).getLon();
+                        cost += Maths.distance(new heig.osmparser.model.Node(0, lat1, lon1, 0),
+                                new heig.osmparser.model.Node(0, lat2, lon2, 0));
+                    }
+                }
+                g.addEdge(n1, n2, cost);
+                g.addEdge(n2, n1, cost);
             }
 
             LOG.log(Level.INFO, "parsing nodes");
 
-            // retrieve all nodes
+            // retrieve all nodes, just keep those who are at the beginning and end of each way
             nodes = doc.getElementsByTagName("node");
-            int len = nodes.getLength();
             for (int i = 0; i < len; i++) {
                 Node node = nodes.item(i);
                 Element element = (Element) node;
                 String id = element.getAttribute("id");
+
                 if (registeredNodes.containsKey(id)) {
                     long n = Long.parseLong(element.getAttribute("id"));
                     double lat = Double.parseDouble(element.getAttribute("lat"));
@@ -143,16 +175,26 @@ public class Parser {
                 NodeList children = element.getElementsByTagName("nd");
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
+                double cost = 0;
 
                 for (int k = 1; k < children.getLength(); ++k) {
                     Node child = children.item(k);
                     Element element2 = (Element) child;
                     long curNode = Long.parseLong(element2.getAttribute("ref"));
+
+                    if(usedNodes.get(firstNode) != null && usedNodes.get(curNode) != null) {
+                        double lat1 = usedNodes.get(firstNode).getLat();
+                        double lon1 = usedNodes.get(firstNode).getLon();
+                        double lat2 = usedNodes.get(curNode).getLat();
+                        double lon2 = usedNodes.get(curNode).getLon();
+                        cost += Maths.distance(new heig.osmparser.model.Node(0, lat1, lon1, 0),
+                                new heig.osmparser.model.Node(0, lat2, lon2, 0));
+                    }
+
                     if (g.getAdjList().containsKey(curNode)) {
-                        //System.out.println(firstNode + " -> " + curNode);
-                        g.addEdge(firstNode, curNode);
-                        g.addEdge(curNode, firstNode);
-                        firstNode = curNode;
+                        g.addEdge(firstNode, curNode, cost);
+                        g.addEdge(curNode, firstNode, cost);
+                        firstNode = curNode; cost = 0.0;
                     }
                 }
             }
@@ -161,22 +203,27 @@ public class Parser {
 
             // remove from adjList all node ids that have not been found in the file
             // because we must know the coordinates of such nodes.
-            HashMap<Long, List<Long>> curAdjList = g.getAdjList();
-            HashMap<Long, List<Long>> newAdjList = new HashMap<>();
+            HashMap<Long, List<Pair<Long, Double>>> curAdjList = g.getAdjList();
+            HashMap<Long, List<Pair<Long, Double>>> newAdjList = new HashMap<>();
 
+            // THIS STEP IS VERY IMPORTANT BECAUSE EACH NODE IN THE WAYS MUST BE KNOWN (LAT & LON)
             // reconstruct the new cleaned adjList with only the ids whose nodes
             // can be retrieved
             for (long id : curAdjList.keySet()) {
                 if (g.getNodes().containsKey(id)) {
                     newAdjList.put(id, new LinkedList<>());
-                    for (long id2 : curAdjList.get(id)) {
+                    for (int i = 0; i < curAdjList.get(id).size(); ++i) {
+                        Pair<Long, Double> p = curAdjList.get(id).get(i);
+                        long id2 = p.getKey();
                         if (g.getNodes().containsKey(id2)) {
-                            newAdjList.get(id).add(id2);
+                            newAdjList.get(id).add(new Pair(id2, p.getValue()));
                         }
                     }
                 }
             }
+
             g.setAdjList(newAdjList);
+
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

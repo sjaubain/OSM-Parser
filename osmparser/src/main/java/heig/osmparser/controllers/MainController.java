@@ -25,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.net.URL;
@@ -79,11 +80,11 @@ public class MainController implements Initializable {
             try {
                 Parser parser = new Parser();
                 g = parser.toGraph("./input/ways.osm");
-                parser.addCities(g, "./input/cities.osm");
+                //parser.addCities(g, "./input/cities.osm");
                 //EPSConverter.graphToEPS(g, "./output/drawing.ps");
                 return 0;
             } catch(Exception e) {
-                log(e.getMessage(), Log.LogLevels.ERROR);
+                log(e.getStackTrace().toString(), Log.LogLevels.ERROR);
                 return -1;
             }
             }
@@ -278,7 +279,7 @@ public class MainController implements Initializable {
 
             Line line = new Line(startX, startY, endX, endY);
             line.setStroke(Color.BLUE);
-            line.setStrokeWidth(0.1);
+            line.setStrokeWidth(0.25);
             shortestPathLines.getChildren().add(line);
         }
         mapPane.getChildren().add(shortestPathLines);
@@ -303,8 +304,8 @@ public class MainController implements Initializable {
                 double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
 
 
-                for (Long j : g.getAdjList().get(i)) {
-                    Node n2 = g.getNodes().get(j);
+                for (Pair<Long, Double> p : (g.getAdjList().get(i))) {
+                    Node n2 = g.getNodes().get(p.getKey());
 
                     if (n2 != null) {
                         int[] nodeShape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
