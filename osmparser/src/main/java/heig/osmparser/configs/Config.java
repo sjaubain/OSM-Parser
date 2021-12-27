@@ -7,8 +7,8 @@ import java.util.HashMap;
 public abstract class Config {
     public static HashMap<String, Double> roadTypeStrokeWidth = new HashMap<>() {{
         put("", 0.4);
-        put("motorway", 0.4);
-        put("motorway_link", 0.4);
+        put("motorway", 0.6);
+        put("motorway_link", 0.6);
         put("primary", 0.3);
         put("primary_link", 0.3);
         put("secondary", 0.2);

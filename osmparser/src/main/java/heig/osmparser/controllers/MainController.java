@@ -16,6 +16,8 @@ import javafx.scene.Group;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -48,7 +50,6 @@ public class MainController implements Initializable {
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
-    private Box selection;
     private Task<Integer> task;
     private Shell shell;
     private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
@@ -105,57 +106,36 @@ public class MainController implements Initializable {
             current_action = ACTION_PERFORM.DIJKSTRA;
         });
 
-        /*
-        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            //TODO this event is not triggered because it is shadowed by the scroll and drag events
-            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                if(event.getButton().equals(MouseButton.PRIMARY)) {
-                    selection = new Box(mapPane, event.getSceneX(), event.getSceneY() - 25);
-                    double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
-                    maxlat.setText(String.valueOf(latLon[0]));
-                    minlon.setText(String.valueOf(latLon[1]));
-                }
-            } else if(current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
+
+        mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+           if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
+                double[] coords = getLatLonFromMousePos(event.getX(), event.getY());
                 if(firstNodeChoosen) {
                     System.out.println("dijkstra");
-                    if(selectedNode != null) {
-                        from = selectedNode;
-                        firstNodeChoosen = false;
-                        g.dijkstra(from.getId());
-                    }
+                    Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
+                    firstNodeChoosen = false;
+                    g.dijkstra(from.getId());
                 } else {
-                    if(selectedNode != null) {
-                        to = selectedNode;
-                        firstNodeChoosen = true;
-                        //TODO wait that dijkstra is done
-                        System.out.println(g.getShortestPath(to).size());
-                        selectedNode = null;
-                        drawPath(g.getShortestPath(to));
-                    }
+                    System.out.println("path");
+                    Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
+                    firstNodeChoosen = true;
+                    //TODO wait that dijkstra is done
+                    drawPath(g.getShortestPath(to));
                 }
             }
         });
-        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if(current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                if(event.getButton().equals(MouseButton.PRIMARY)) {
-                    selection.render(event.getSceneX(), event.getSceneY() - 25);
-                    double[] latLon = getLatLonFromMousePos(event.getSceneX(), event.getSceneY());
-                    minlat.setText(String.valueOf(latLon[0]));
-                    maxlon.setText(String.valueOf(latLon[1]));
-                }
-            }
-        });
-        mapPane.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if(event.getButton().equals(MouseButton.PRIMARY)) {
-                if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
-                    mapPane.getChildren().remove(selection.getRectangle());
-                }
-            }
-        });*/
 
         // Create operators for zoom and drag on map
         AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
+    }
+
+    public double[] getGPSCoordsFromMousePos(double x, double y) {
+        double[] bounds = g.getBounds();
+        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner
+        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
+        return new double[]{bounds[0] + x / mapPane.getWidth()  * (bounds[2] - bounds[0]),
+                bounds[3] + (mapPane.getHeight() - y) / mapPane.getHeight() * (bounds[1] - bounds[3])};
     }
 
     public String[] generateOsmosisCommands() {
@@ -275,7 +255,7 @@ public class MainController implements Initializable {
 
             Line line = new Line(startX, startY, endX, endY);
             line.setStroke(Color.BLUE);
-            line.setStrokeWidth(0.25);
+            line.setStrokeWidth(0.65);
             shortestPathLines.getChildren().add(line);
         }
         mapPane.getChildren().add(shortestPathLines);

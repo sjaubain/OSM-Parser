@@ -21,11 +21,15 @@ public abstract class Maths {
         return new int[]{E, N};
     }
 
-    public static double distance(Node n1, Node n2) {
+    public static double distanceNodes(Node n1, Node n2) {
         int[] shape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
         int[] shape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
         double dX = Math.abs((double)(shape2[0] - shape1[0])), dY = Math.abs((double)(shape2[1] - shape1[1]));
         return dX * dX + dY * dY;
+    }
+
+    public static double distanceGPS(double lat1, double lon1, double lat2, double lon2) {
+        return distanceNodes(new Node(0, lat1, lon1, 0), new Node(0, lat2, lon2, 0));
     }
 
     public static double round(double value, int nbDecimal) {

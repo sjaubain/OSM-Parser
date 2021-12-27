@@ -63,6 +63,19 @@ public class Graph {
         }
     }
 
+    public Node getClosestNodeFromGPSCoords(double lat, double lon) {
+        Node minNode = new Node();
+        double minDist = Double.MAX_VALUE;
+        for(Node n : nodes.values()) {
+            double curDist = Maths.distanceGPS(n.getLat(), n.getLon(), lat, lon);
+            if(curDist < minDist) {
+                minDist = curDist;
+                minNode = n;
+            }
+        }
+        return minNode;
+    }
+
     public String toString() {
         String ret = "";
         if(nodes.size() > MAX_NODES) {

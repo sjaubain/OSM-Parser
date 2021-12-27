@@ -7,7 +7,9 @@ public class Node {
     public Node(long id, double lat, double lon, long population) {
         this.id = id; this.lat = lat; this.lon = lon; this.population = population;
     }
-
+    public Node() {
+        this(0, 0, 0, 0);
+    }
     public long getId() {
         return id;
     }

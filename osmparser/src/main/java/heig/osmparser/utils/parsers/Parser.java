@@ -128,10 +128,7 @@ public class Parser {
             nodes = doc.getElementsByTagName("way");
 
             for (int i = 0; i < nodes.getLength(); ++i) {
-
-
                 Node node = nodes.item(i);
-                System.out.println(((Element) node).getAttribute("id"));
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
                 String roadType = getRoadType(node);
@@ -157,7 +154,7 @@ public class Parser {
                         double lon1 = usedNodes.get(cur).getLon();
                         double lat2 = usedNodes.get(next).getLat();
                         double lon2 = usedNodes.get(next).getLon();
-                        cost += Maths.distance(new heig.osmparser.model.Node(0, lat1, lon1, 0),
+                        cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
                                 new heig.osmparser.model.Node(0, lat2, lon2, 0));
                     }
                 }
@@ -206,7 +203,7 @@ public class Parser {
                         double lon1 = usedNodes.get(firstNode).getLon();
                         double lat2 = usedNodes.get(curNode).getLat();
                         double lon2 = usedNodes.get(curNode).getLon();
-                        cost += Maths.distance(new heig.osmparser.model.Node(0, lat1, lon1, 0),
+                        cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
                                 new heig.osmparser.model.Node(0, lat2, lon2, 0));
                     }
 
