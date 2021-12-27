@@ -18,7 +18,7 @@ public class Graph {
 
     private HashMap<Long, Node> nodes;
 
-    private HashMap<Long, List<Pair<Long, Double>>> adjList;
+    private HashMap<Long, List<Way>> adjList;
 
     private HashMap<Long, Node> cities;
 
@@ -53,13 +53,13 @@ public class Graph {
         return nodes.containsKey(id);
     }
 
-    public void addEdge(Long n1Id, Long n2Id, double cost) {
+    public void addEdge(Long n1Id, Long n2Id, double cost, String roadType) {
 
         if (!adjList.containsKey(n1Id)) {
-            List list = new LinkedList<>(); list.add(new Pair(n2Id, cost));
+            List list = new LinkedList<>(); list.add(new Way(n1Id, n2Id, cost, roadType));
             adjList.put(n1Id, list);
         } else {
-            adjList.get(n1Id).add(new Pair(n2Id, cost));
+            adjList.get(n1Id).add(new Way(n1Id, n2Id, cost, roadType));
         }
     }
 
@@ -70,8 +70,8 @@ public class Graph {
         } else {
             for(Long i : adjList.keySet()) {
                 ret += "successors of Node " + i + " : ";
-                for(Pair p : adjList.get(i))
-                    ret += p.getKey() + " ";
+                for(Way w : adjList.get(i))
+                    ret += w.getToId() + " ";
                 ret += System.lineSeparator();
             }
         }
@@ -96,11 +96,11 @@ public class Graph {
             long i_id = p.getValue();
             Node i = nodes.get(i_id);
             if(i != null) {
-                for (Pair<Long, Double> weightedEdge : adjList.get(i_id)) {
-                    long j_id = weightedEdge.getKey();
+                for (Way weightedEdge : adjList.get(i_id)) {
+                    long j_id = weightedEdge.getToId();
                     Node j = nodes.get(j_id);
                     if(j != null) {
-                        double c_ij = weightedEdge.getValue();
+                        double c_ij = weightedEdge.getCost();
                         if(lambda.get(j_id) > lambda.get(i_id) + c_ij) {
                             lambda.replace(j_id, lambda.get(i_id) + c_ij);
                             pred.replace(j_id, i_id);
@@ -122,7 +122,7 @@ public class Graph {
         return ret;
     }
 
-    public HashMap<Long, List<Pair<Long, Double>>> getAdjList() {
+    public HashMap<Long, List<Way>> getAdjList() {
         return adjList;
     }
 
@@ -160,7 +160,7 @@ public class Graph {
         this.maxPopulation = maxPopulation;
     }
 
-    public void setAdjList(HashMap<Long, List<Pair<Long, Double>>> adjList) {
+    public void setAdjList(HashMap<Long, List<Way>> adjList) {
         this.adjList = adjList;
     }
 }

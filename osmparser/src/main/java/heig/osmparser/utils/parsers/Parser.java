@@ -1,6 +1,7 @@
 package heig.osmparser.utils.parsers;
 
 import heig.osmparser.model.Graph;
+import heig.osmparser.model.Way;
 import heig.osmparser.net.OverpassAPIClient;
 import heig.osmparser.utils.maths.Maths;
 import javafx.util.Pair;
@@ -72,6 +73,20 @@ public class Parser {
         }
     }
 
+    private String getRoadType(Node way) {
+        Element element = (Element) way;
+        NodeList children = element.getElementsByTagName("tag");
+        if(children != null) {
+            for (int i = 0; i < children.getLength(); ++i) {
+                Node node = children.item(i);
+                if (((Element) node).getAttribute("k").equals("highway")) {
+                    return ((Element) node).getAttribute("v");
+                }
+            }
+        }
+        return null;
+    }
+
     public Graph toGraph(String filename) {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -114,9 +129,12 @@ public class Parser {
 
             for (int i = 0; i < nodes.getLength(); ++i) {
 
+
                 Node node = nodes.item(i);
+                System.out.println(((Element) node).getAttribute("id"));
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
+                String roadType = getRoadType(node);
 
                 // first node of the road
                 long n1 = Long.parseLong(((Element) children.item(0))
@@ -143,10 +161,9 @@ public class Parser {
                                 new heig.osmparser.model.Node(0, lat2, lon2, 0));
                     }
                 }
-                g.addEdge(n1, n2, cost);
-                g.addEdge(n2, n1, cost);
+                g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
+                g.addEdge(n2, n1, cost, roadType == null ? "" : roadType);
             }
-
             LOG.log(Level.INFO, "parsing nodes");
 
             // retrieve all nodes, just keep those who are at the beginning and end of each way
@@ -174,6 +191,7 @@ public class Parser {
                 Node node = nodes.item(i);
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
+                String roadType = getRoadType(node);
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
                 double cost = 0;
@@ -193,8 +211,8 @@ public class Parser {
                     }
 
                     if (g.getAdjList().containsKey(curNode)) {
-                        g.addEdge(firstNode, curNode, cost);
-                        g.addEdge(curNode, firstNode, cost);
+                        g.addEdge(firstNode, curNode, cost, roadType == null ? "" : roadType);
+                        g.addEdge(curNode, firstNode, cost, roadType == null ? "" : roadType);
                         firstNode = curNode; cost = 0.0;
                     }
                 }
@@ -204,8 +222,8 @@ public class Parser {
 
             // remove from adjList all node ids that have not been found in the file
             // because we must know the coordinates of such nodes.
-            HashMap<Long, List<Pair<Long, Double>>> curAdjList = g.getAdjList();
-            HashMap<Long, List<Pair<Long, Double>>> newAdjList = new HashMap<>();
+            HashMap<Long, List<Way>> curAdjList = g.getAdjList();
+            HashMap<Long, List<Way>> newAdjList = new HashMap<>();
 
             // THIS STEP IS VERY IMPORTANT BECAUSE EACH NODE IN THE WAYS MUST BE KNOWN (LAT & LON)
             // reconstruct the new cleaned adjList with only the ids whose nodes
@@ -214,10 +232,10 @@ public class Parser {
                 if (g.getNodes().containsKey(id)) {
                     newAdjList.put(id, new LinkedList<>());
                     for (int i = 0; i < curAdjList.get(id).size(); ++i) {
-                        Pair<Long, Double> p = curAdjList.get(id).get(i);
-                        long id2 = p.getKey();
+                        Way w = curAdjList.get(id).get(i);
+                        long id2 = w.getToId();
                         if (g.getNodes().containsKey(id2)) {
-                            newAdjList.get(id).add(new Pair(id2, p.getValue()));
+                            newAdjList.get(id).add(new Way(id, id2, w.getCost(), w.getRoadType()));
                         }
                     }
                 }

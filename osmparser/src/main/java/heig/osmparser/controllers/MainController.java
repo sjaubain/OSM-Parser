@@ -1,12 +1,13 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.Shell;
+import heig.osmparser.configs.Config;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
+import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.Parser;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -14,23 +15,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.text.Text;
-import javafx.util.Pair;
 
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -297,6 +292,7 @@ public class MainController implements Initializable {
         // multiplied by -1 because y-axis is in reverse side (downside)
         int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
         double ratioHoverW = mapShape[1] / (double) mapShape[0];
+        // auto scale map within screen
         if(ratioHoverW > 1) {
             mapPane.setTranslateX((SCREEN_WIDTH - 400 / ratioHoverW) / 2);
             mapPane.setTranslateY((SCREEN_HEIGHT - 400) / 2);
@@ -318,8 +314,9 @@ public class MainController implements Initializable {
                 double startX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
                 double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 
-                for (Pair<Long, Double> p : (g.getAdjList().get(i))) {
-                    Node n2 = g.getNodes().get(p.getKey());
+                for (Way w : (g.getAdjList().get(i))) {
+                    Node n2 = g.getNodes().get(w.getToId());
+                    String roadType = w.getRoadType();
 
                     if (n2 != null) {
                         nodeShape = Maths.latsToMN03(n2.getLat(), n2.getLon());
@@ -327,12 +324,13 @@ public class MainController implements Initializable {
                         double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
-                        line.setStroke(Color.LIGHTYELLOW);
-                        line.setStrokeWidth(0.1);
+                        line.setStroke(Config.roadTypeColor.get(roadType));
+                        line.setStrokeWidth(Config.roadTypeStrokeWidth.get(roadType));
                         mapPane.getChildren().add(line);
                     }
                 }
 
+                /*
                 //TODO : make a function addNodeCircle
                 Circle circle = new Circle(0.1, Color.WHITE);
                 circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0]);
@@ -369,6 +367,7 @@ public class MainController implements Initializable {
 
                 nodesCircles.put(n1.getId(), circle);
                 mapPane.getChildren().add(circle);
+                */
             }
         }
         /*
