@@ -142,6 +142,7 @@ public class Parser {
                 registeredNodes.put(String.valueOf(n1), true);
                 registeredNodes.put(String.valueOf(n2), true);
 
+                //TODO : compute time cost depending on tag "max_speed"
                 double cost = 0;
                 for(int j = 0; j < children.getLength() - 1; ++j) {
                     long cur = Long.parseLong(((Element) children.item(j))
@@ -191,6 +192,7 @@ public class Parser {
                 String roadType = getRoadType(node);
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
+                //TODO : compute time cost depending on tag "max_speed"
                 double cost = 0;
 
                 for (int k = 1; k < children.getLength(); ++k) {

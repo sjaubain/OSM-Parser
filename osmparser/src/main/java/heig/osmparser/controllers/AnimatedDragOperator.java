@@ -11,15 +11,6 @@ public class AnimatedDragOperator {
 
     public AnimatedDragOperator(Pane pane) {
 
-        /*
-        pane.setOnMousePressed(e -> {
-            if(e.getButton().equals(MouseButton.SECONDARY)) {
-                capturedX = e.getSceneX() - pane.getTranslateX();
-                capturedY = e.getSceneY() - pane.getTranslateY();
-                pane.getScene().setCursor(Cursor.CLOSED_HAND);
-            }
-        });*/
-
         pane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton().equals(MouseButton.SECONDARY)) {
                 if (!e.isPrimaryButtonDown()) {
@@ -29,14 +20,6 @@ public class AnimatedDragOperator {
                 }
             }
         });
-
-        /*
-        pane.setOnMouseReleased(e -> {
-            if (e.getButton().equals(MouseButton.SECONDARY)) {
-                pane.getScene().setCursor(Cursor.DEFAULT);
-            }
-        });
-        */
 
         pane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
             if (e.getButton().equals(MouseButton.SECONDARY)) {

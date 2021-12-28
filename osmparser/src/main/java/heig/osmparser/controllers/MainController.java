@@ -24,13 +24,19 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.web.WebView;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
-
 public class MainController implements Initializable {
 
     @FXML
@@ -47,6 +53,8 @@ public class MainController implements Initializable {
     private RadioButton actionAreaSelection, actionDijkstra;
     @FXML
     private VBox importChoices;
+    @FXML
+    private WebView webView;
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -58,9 +66,64 @@ public class MainController implements Initializable {
     private HashMap<Long, Circle> nodesCircles;
     private Node selectedNode;
 
+    public static String getTileNumber(final double lat, final double lon, final int zoom) {
+        int xtile = (int)Math.floor( (lon + 180) / 360 * (1<<zoom) ) ;
+        int ytile = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1<<zoom) ) ;
+        if (xtile < 0)
+            xtile=0;
+        if (xtile >= (1<<zoom))
+            xtile=((1<<zoom)-1);
+        if (ytile < 0)
+            ytile=0;
+        if (ytile >= (1<<zoom))
+            ytile=((1<<zoom)-1);
+        return("" + zoom + "/" + xtile + "/" + ytile);
+    }
+
+    private static InputStream withValidHeaders(URL url) {
+        try {
+            HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
+            // we need to set some params in the headers
+            httpcon.addRequestProperty("User-Agent", "Chrome");
+            // because of the error message : please specify a valid referer
+            httpcon.addRequestProperty("Referer", "https://staticmap.openstreetmap.de");
+            return httpcon.getInputStream();
+        } catch (IOException e) {
+            String error = e.toString();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static int saveImage(String query, String destinationFile) throws IOException {
+        System.out.println(query);
+        try (InputStream in = withValidHeaders(new URL(query))) {
+            Files.copy(in, Paths.get(destinationFile), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        int zoom = 10;
+        double lat = 47.968056d;
+        double lon = 7.909167d;
+
+        String imageUrl = "https://staticmap.openstreetmap.de/staticmap.php" +
+                "?center=40.714728,-73.998672&zoom=14&size=865x512&maptype=mapnik";//https://tile.openstreetmap.org/" + getTileNumber(lat, lon, zoom) + ".png";
+        try {
+            saveImage(imageUrl, "./output/dst.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+/*
+        webView.getEngine().loadContent("<iframe width=\"425\" height=\"350\" frameborder=\"0\" scrolling=\"no\" " +
+                "marginheight=\"0\" marginwidth=\"0\" " +
+
+                "style=\"border: 1px solid black\"></iframe><br/><small><a href=\"https://www.openstreetmap.org/?mlat=46.7175&amp;mlon=6.6254#map=11/46.7175/6.6254\">Afficher une carte plus grande</a></small>");
+*/
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsPane.toFront(); logsPane.setPickOnBounds(false);
         actionAreaSelection.setSelected(true);

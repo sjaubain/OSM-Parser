@@ -2,6 +2,7 @@ module heig.osmparser {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.logging;
+    requires javafx.web;
     requires java.xml;
     requires javafx.graphics;
     requires com.google.gson;

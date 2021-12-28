@@ -14,7 +14,7 @@ public class Graph {
 
     final static Logger LOG = Logger.getLogger(Graph.class.getName());
 
-    private final int MAX_NODES = 10;
+    private final int MAX_NODES = 100;
 
     private HashMap<Long, Node> nodes;
 
@@ -124,7 +124,6 @@ public class Graph {
             }
         }
     }
-
 
     public List<Node> getShortestPath(Node dest) {
         List<Node> ret = new LinkedList<>();

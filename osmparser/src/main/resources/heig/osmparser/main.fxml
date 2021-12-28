@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
 
 <AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0" prefWidth="1100.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
     <children>
@@ -49,10 +50,11 @@
                                 </ToolBar>
                             </children>
                         </Pane>
-                        <Pane fx:id="mapPane"/>
+                        <Pane fx:id="mapPane" />
                     </children>
                 </AnchorPane>
                 <AnchorPane minWidth="200.0">
+
                     <children>
                         <TextField fx:id="minlon" layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
                         <TextField fx:id="maxlat" layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />

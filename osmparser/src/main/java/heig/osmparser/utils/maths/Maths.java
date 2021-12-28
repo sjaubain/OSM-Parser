@@ -34,7 +34,6 @@ public abstract class Maths {
 
     public static double round(double value, int nbDecimal) {
         if (nbDecimal < 0) throw new IllegalArgumentException();
-
         BigDecimal bd = BigDecimal.valueOf(value);
         bd = bd.setScale(nbDecimal, RoundingMode.HALF_UP);
         return bd.doubleValue();
