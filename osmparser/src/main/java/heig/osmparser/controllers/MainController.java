@@ -319,11 +319,9 @@ public class MainController implements Initializable {
         //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
         // upper left corner coordinates
-        double[] shape1 = new double[]{Maths.haversine(bounds[1], 0.0, bounds[1], bounds[0]),
-                                       Maths.haversine(0.0, bounds[0], bounds[1], bounds[0])};
+        double[] shape1 = Maths.mapProjection(bounds[1], bounds[0]);
         // bottom right corner coordinates
-        double[] shape2 = new double[]{Maths.haversine(bounds[3], 0.0, bounds[3], bounds[2]),
-                                       Maths.haversine(0.0, bounds[2], bounds[3], bounds[2])};
+        double[] shape2 = Maths.mapProjection(bounds[3], bounds[2]);
 
         // multiplied by -1 because y-axis is in reverse side (downside)
         double[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
@@ -370,20 +368,18 @@ public class MainController implements Initializable {
         for(Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
             if(n1 != null) {
-                nodeShape = new double[]{Maths.haversine(n1.getLat(), 0.0, n1.getLat(), n1.getLon()),
-                                         Maths.haversine(0.0, n1.getLon(), n1.getLat(), n1.getLon())};
-                double startX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
-                double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
+                nodeShape = Maths.mapProjection(n1.getLat(), n1.getLon());
+                double startX = (nodeShape[0] - shape1[0]) * factorX / mapShape[0];
+                double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
 
                 for (Way w : (g.getAdjList().get(i))) {
                     Node n2 = g.getNodes().get(w.getToId());
                     String roadType = w.getRoadType();
 
                     if (n2 != null) {
-                        nodeShape = new double[]{Maths.haversine(n1.getLat(), 0.0, n2.getLat(), n2.getLon()),
-                                                 Maths.haversine(0.0, n2.getLon(), n2.getLat(), n2.getLon())};
-                        double endX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
-                        double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
+                        nodeShape = Maths.mapProjection(n2.getLat(), n2.getLon());
+                        double endX = (nodeShape[0] - shape1[0]) * factorX / mapShape[0];
+                        double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
                         line.setStroke(Config.roadTypeColor.get(roadType));

@@ -7,7 +7,8 @@ import java.math.RoundingMode;
 
 public abstract class Maths {
 
-    public final static double R = 6371.0;
+    // earth radius used in OSM
+    public final static double R =  6378.137;
 
     public static double toRad(double deg) {
         return Math.PI / 180d * deg;
@@ -32,6 +33,14 @@ public abstract class Maths {
     }
 
     /*
+     * transform (lat, lon) for Mercator projection
+     * returns (x, y)
+     */
+    public static double[] mapProjection(double lat, double lon) {
+        return new double[]{toRad(lon) * R, Math.log(Math.tan(Math.PI / 4 + toRad(lat) / 2)) * R};
+    }
+
+    /*
      * returns distance in kilometers
      */
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {
@@ -44,6 +53,7 @@ public abstract class Maths {
         return R * c;
     }
 
+    // TODO : use haversine instead of MN03
     public static double distanceNodes(Node n1, Node n2) {
         int[] shape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
         int[] shape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
