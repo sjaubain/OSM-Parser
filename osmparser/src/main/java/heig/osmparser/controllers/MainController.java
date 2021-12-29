@@ -27,13 +27,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.web.WebView;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -66,6 +60,7 @@ public class MainController implements Initializable {
     private HashMap<Long, Circle> nodesCircles;
     private Node selectedNode;
 
+    /*
     public static String getTileNumber(final double lat, final double lon, final int zoom) {
         int xtile = (int)Math.floor( (lon + 180) / 360 * (1<<zoom) ) ;
         int ytile = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1<<zoom) ) ;
@@ -79,14 +74,16 @@ public class MainController implements Initializable {
             ytile=((1<<zoom)-1);
         return("" + zoom + "/" + xtile + "/" + ytile);
     }
-
+    */
+    private final static String API_KEY = "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";//"XvPdt9EhmuPIAqmVpxFeeGyFP4vFcFj7";
+    /*
     private static InputStream withValidHeaders(URL url) {
         try {
             HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
             // we need to set some params in the headers
-            httpcon.addRequestProperty("User-Agent", "Chrome");
+            httpcon.addRequestProperty("User-Agent", "Mozilla/4.0");
             // because of the error message : please specify a valid referer
-            httpcon.addRequestProperty("Referer", "https://staticmap.openstreetmap.de");
+            httpcon.addRequestProperty("Referer", "https://wiki.openstreetmap.org");
             return httpcon.getInputStream();
         } catch (IOException e) {
             String error = e.toString();
@@ -103,21 +100,12 @@ public class MainController implements Initializable {
         }
         return 0;
     }
-
+    */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        int zoom = 10;
-        double lat = 47.968056d;
-        double lon = 7.909167d;
-
-        String imageUrl = "https://staticmap.openstreetmap.de/staticmap.php" +
-                "?center=40.714728,-73.998672&zoom=14&size=865x512&maptype=mapnik";//https://tile.openstreetmap.org/" + getTileNumber(lat, lon, zoom) + ".png";
-        try {
-            saveImage(imageUrl, "./output/dst.png");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // V  V  V  V | VERY IMPORTANT HERE BELOW !!!! | V  V  V  V
+        //https://render.openstreetmap.org/cgi-bin/export?bbox=27.58006095886231,53.84102923969372,27.599630355834964,53.865178733516636&scale=20413&format=png
 /*
         webView.getEngine().loadContent("<iframe width=\"425\" height=\"350\" frameborder=\"0\" scrolling=\"no\" " +
                 "marginheight=\"0\" marginwidth=\"0\" " +
@@ -330,30 +318,60 @@ public class MainController implements Initializable {
 
         //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
-        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner coordinates
-        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner coordinates
+        // upper left corner coordinates
+        double[] shape1 = new double[]{Maths.haversine(bounds[1], 0.0, bounds[1], bounds[0]),
+                                       Maths.haversine(0.0, bounds[0], bounds[1], bounds[0])};
+        // bottom right corner coordinates
+        double[] shape2 = new double[]{Maths.haversine(bounds[3], 0.0, bounds[3], bounds[2]),
+                                       Maths.haversine(0.0, bounds[2], bounds[3], bounds[2])};
+
         // multiplied by -1 because y-axis is in reverse side (downside)
-        int[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
+        double[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
         double ratioHoverW = mapShape[1] / (double) mapShape[0];
-        // auto scale map within screen
+        // auto scale map within screen (depending on zoom level, see : https://wiki.openstreetmap.org/wiki/Zoom_levels)
+        double defaultWidth = 400;
         if(ratioHoverW > 1) {
-            mapPane.setTranslateX((SCREEN_WIDTH - 400 / ratioHoverW) / 2);
-            mapPane.setTranslateY((SCREEN_HEIGHT - 400) / 2);
-            mapPane.setPrefHeight(400); mapPane.setPrefWidth(400 / ratioHoverW);
+            mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth / ratioHoverW) / 2);
+            mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth) / 2);
+            mapPane.setPrefHeight(defaultWidth); mapPane.setPrefWidth(defaultWidth / ratioHoverW);
         } else {
-            mapPane.setTranslateX((SCREEN_WIDTH - 400) / 2);
-            mapPane.setTranslateY((SCREEN_HEIGHT - 400 * ratioHoverW) / 2);
-            mapPane.setPrefHeight(400 * ratioHoverW); mapPane.setPrefWidth(400);
+            mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth) / 2);
+            mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth * ratioHoverW) / 2);
+            mapPane.setPrefHeight(defaultWidth * ratioHoverW); mapPane.setPrefWidth(defaultWidth);
         }
         double factorX = mapPane.getPrefWidth();
         double factorY = mapPane.getPrefHeight();
 
+        /*
+        String url = "https://open.mapquestapi.com/staticmap/v4/getmap?key=" + API_KEY +
+                "&size=" + (int) mapPane.getPrefWidth() + "," + (int) mapPane.getPrefHeight() + "&zoom=9&center=" +
+                Maths.round((bounds[1] + bounds[3]) / 2d, 10) + "," + Maths.round((bounds[2] + bounds[0]) / 2d, 10);
+        System.out.println(url);
+        //mapPane.setStyle("-fx-background-image: url(" + url + ")");
+        */
+
+        double scale = mapShape[1];
+        double ratioo = 10.583333333;
+
+        /*
+        String url = "https://render.openstreetmap.org/cgi-bin/export?bbox=" +
+                bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] +
+                "&scale=" + scale / ratioo + "&format=png";
+        */
+
+        String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
+                 + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/" + (int) mapPane.getPrefWidth() + "x" +  (int) mapPane.getPrefHeight() +
+                 "?access_token=" + API_KEY;
+
+        System.out.println(url);
+        //mapPane.setStyle("-fx-background-image: url(" + url + ")");
         // draw roads
-        int[] nodeShape;
+        double[] nodeShape;
         for(Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
             if(n1 != null) {
-                nodeShape = Maths.latsToMN03(n1.getLat(), n1.getLon());
+                nodeShape = new double[]{Maths.haversine(n1.getLat(), 0.0, n1.getLat(), n1.getLon()),
+                                         Maths.haversine(0.0, n1.getLon(), n1.getLat(), n1.getLon())};
                 double startX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
                 double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 
@@ -362,7 +380,8 @@ public class MainController implements Initializable {
                     String roadType = w.getRoadType();
 
                     if (n2 != null) {
-                        nodeShape = Maths.latsToMN03(n2.getLat(), n2.getLon());
+                        nodeShape = new double[]{Maths.haversine(n1.getLat(), 0.0, n2.getLat(), n2.getLon()),
+                                                 Maths.haversine(0.0, n2.getLon(), n2.getLat(), n2.getLon())};
                         double endX = (nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0];
                         double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1];
 

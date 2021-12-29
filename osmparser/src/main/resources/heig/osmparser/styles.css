@@ -5,6 +5,7 @@
 #mapPane {
     -fx-border-radius: 2px;
     -fx-background-color: #000000;
+    -fx-background-image: url("map.png");
 }
 
 #btnReduceLogs {
