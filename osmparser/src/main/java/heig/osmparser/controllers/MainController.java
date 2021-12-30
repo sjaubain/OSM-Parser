@@ -1,10 +1,8 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.Shell;
-import heig.osmparser.configs.Config;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
-import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.Parser;
@@ -18,16 +16,24 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.web.WebView;
+import javafx.scene.image.Image;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -59,6 +65,7 @@ public class MainController implements Initializable {
     private boolean firstNodeChoosen = true;
     private HashMap<Long, Circle> nodesCircles;
     private Node selectedNode;
+    private final double zoomFactor = 1.6;
 
     /*
     public static String getTileNumber(final double lat, final double lon, final int zoom) {
@@ -76,7 +83,7 @@ public class MainController implements Initializable {
     }
     */
     private final static String API_KEY = "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";//"XvPdt9EhmuPIAqmVpxFeeGyFP4vFcFj7";
-    /*
+
     private static InputStream withValidHeaders(URL url) {
         try {
             HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
@@ -92,7 +99,6 @@ public class MainController implements Initializable {
     }
 
     private static int saveImage(String query, String destinationFile) throws IOException {
-        System.out.println(query);
         try (InputStream in = withValidHeaders(new URL(query))) {
             Files.copy(in, Paths.get(destinationFile), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
@@ -100,7 +106,7 @@ public class MainController implements Initializable {
         }
         return 0;
     }
-    */
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -125,16 +131,16 @@ public class MainController implements Initializable {
         task = new Task() {
             @Override
             protected Integer call() throws Exception {
-            try {
-                Parser parser = new Parser();
-                g = parser.toGraph("./input/ways.osm");
-                //parser.addCities(g, "./input/cities.osm");
-                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-                return 0;
-            } catch(Exception e) {
-                log(e.getStackTrace().toString(), Log.LogLevels.ERROR);
-                return -1;
-            }
+                try {
+                    Parser parser = new Parser();
+                    g = parser.toGraph("./input/ways.osm");
+                    //parser.addCities(g, "./input/cities.osm");
+                    //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+                    return 0;
+                } catch(Exception e) {
+                    log(e.getStackTrace().toString(), Log.LogLevels.ERROR);
+                    return -1;
+                }
             }
         };
 
@@ -144,6 +150,7 @@ public class MainController implements Initializable {
             log("parsing done. drawing graph", Log.LogLevels.INFO);
             drawGraph();
             displayGraphBounds();
+
         });
 
         task.setOnFailed(e -> {
@@ -177,7 +184,7 @@ public class MainController implements Initializable {
         });
 
         // Create operators for zoom and drag on map
-        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane);
+        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
     }
 
@@ -340,29 +347,24 @@ public class MainController implements Initializable {
         double factorX = mapPane.getPrefWidth();
         double factorY = mapPane.getPrefHeight();
 
-        /*
-        String url = "https://open.mapquestapi.com/staticmap/v4/getmap?key=" + API_KEY +
-                "&size=" + (int) mapPane.getPrefWidth() + "," + (int) mapPane.getPrefHeight() + "&zoom=9&center=" +
-                Maths.round((bounds[1] + bounds[3]) / 2d, 10) + "," + Maths.round((bounds[2] + bounds[0]) / 2d, 10);
-        System.out.println(url);
-        //mapPane.setStyle("-fx-background-image: url(" + url + ")");
-        */
+        loadTiles(factorX, factorY);
 
-        double scale = mapShape[1];
-        double ratioo = 10.583333333;
 
-        /*
-        String url = "https://render.openstreetmap.org/cgi-bin/export?bbox=" +
-                bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] +
-                "&scale=" + scale / ratioo + "&format=png";
-        */
+        //loadTiles(factorX, factorY);
+        // create a image
+        Image image = new Image("file:./src/main/resources/heig/osmparser/tiles/tile400.png");
+        // create a background image
+        BackgroundImage backgroundimage = new BackgroundImage(image,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT,
+                new BackgroundSize(1.0, 1.0, true, true, false, false));
+        // create Background
+        Background background = new Background(backgroundimage);
+        // set background
+        mapPane.setBackground(background);
 
-        String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
-                 + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/" + (int) mapPane.getPrefWidth() + "x" +  (int) mapPane.getPrefHeight() +
-                 "?access_token=" + API_KEY;
-
-        System.out.println(url);
-        //mapPane.setStyle("-fx-background-image: url(" + url + ")");
+/*
         // draw roads
         double[] nodeShape;
         for(Long i : g.getAdjList().keySet()) {
@@ -388,7 +390,7 @@ public class MainController implements Initializable {
                     }
                 }
 
-                /*
+
                 //TODO : make a function addNodeCircle
                 Circle circle = new Circle(0.1, Color.WHITE);
                 circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0]);
@@ -425,9 +427,11 @@ public class MainController implements Initializable {
 
                 nodesCircles.put(n1.getId(), circle);
                 mapPane.getChildren().add(circle);
-                */
+
             }
-        }
+        }*/
+
+
         /*
         // draw cities
         int maxPop = g.getMaxPopulation();
@@ -454,6 +458,70 @@ public class MainController implements Initializable {
             });
         }
         */
+    }
+    /*
+     * load static image from mapbox api. The zoom level is automatically
+     * deduced from width and height (see doc)
+     */
+    public void loadTiles(double defaultWidth, double defaultHeight) {
+        double[] bounds = g.getBounds();
+        double width = defaultWidth, height = defaultHeight;
+        int tileLevel = 0;
+        while(tileLevel < 12) {
+            if(width < 1280) {
+                String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
+                        + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/"
+                        + (int) width + "x" + (int) height
+                        + "@2x?access_token=" + API_KEY;
+                // Program won't crash if the image is not fetched or not found
+                try {
+                    saveImage(url, "./src/main/resources/heig/osmparser/tiles/tile" + (int) width + ".png");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                // split into four images
+                java.awt.image.BufferedImage result = new BufferedImage(
+                        (int) (width), (int) (height),
+                        BufferedImage.TYPE_INT_RGB);
+                Graphics g = result.getGraphics();
+
+                double minlon = bounds[0], minlat = bounds[3], maxlon = bounds[2], maxlat = bounds[1];
+                double nbSlices = 4;
+                if(width / nbSlices < 1280) {
+                    for(double i = 0; i < nbSlices; ++i) {
+                        for (double j = 0; j < nbSlices; ++j) {
+                            String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
+                                    + "["
+                                    + (minlon + (maxlon - minlon) * i / nbSlices) + ","
+                                    + (minlat + (maxlat - minlat) * j / nbSlices) + ","
+                                    + (minlon + (maxlon - minlon) * (i + 1) / nbSlices) + ","
+                                    + (minlat + (maxlat - minlat) * (j + 1) / nbSlices)
+                                    + "]/"
+                                    + (int) (width / nbSlices) + "x" + (int) (height / nbSlices)
+                                    + "@2x?access_token=" + API_KEY;
+                            // Program won't crash if the image is not fetched or not found
+                            //System.out.println(url);
+
+                            try {
+                                saveImage(url, "./src/main/resources/heig/osmparser/tiles/tile" + (int) width + "slice" + (int) i + "," + (int) j + ".png");
+                                BufferedImage bi = ImageIO.read(new File("./src/main/resources/heig/osmparser/tiles/tile" + (int) width + "slice" + (int) i + "," + (int) j + ".png"));
+                                g.drawImage(bi, (int) (i * width / nbSlices), (int) ((nbSlices - j - 1) * height / nbSlices), (int) (width / nbSlices), (int) (height / nbSlices), null);
+                                ImageIO.write(result,"png", new File("./src/main/resources/heig/osmparser/tiles/tile" + (int) width + ".png"));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+            width *= zoomFactor; height *= zoomFactor;
+            tileLevel++;
+        }
+    }
+
+    public void loadTile() {
+
     }
 
     public void log(String msg, Log.LogLevels logLevel) {

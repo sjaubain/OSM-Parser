@@ -6,6 +6,7 @@ module heig.osmparser {
     requires java.xml;
     requires javafx.graphics;
     requires com.google.gson;
+    requires java.desktop;
 
     opens heig.osmparser to javafx.fxml;
     exports heig.osmparser;
