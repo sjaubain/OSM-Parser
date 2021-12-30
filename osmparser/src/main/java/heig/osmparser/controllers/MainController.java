@@ -132,7 +132,7 @@ public class MainController implements Initializable {
                     firstNodeChoosen = true;
                     //TODO wait that dijkstra is done
                     drawPath(g.getShortestPath(to));
-                    System.out.println("time cost : " + g.getLambda().get(to.getId()) / 60d + " minutes");
+                    System.out.println("time cost : " + 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes");
                 }
             }
         });

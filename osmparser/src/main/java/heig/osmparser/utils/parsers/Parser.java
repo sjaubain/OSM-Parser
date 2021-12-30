@@ -130,6 +130,7 @@ public class Parser {
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
 
+
                 double maxSpeed = 13.8; // default speed
                 NodeList tags = element.getElementsByTagName("tag");
                 for (int k = 1; k < tags.getLength(); ++k) {
@@ -218,24 +219,25 @@ public class Parser {
                 String roadType = getRoadType(node);
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
-                long startNode = firstNode;
+                long startNode = firstNode, curNode = firstNode;
                 long lastNode = Long.parseLong(((Element) children.item(children.getLength() - 1)).getAttribute("ref"));
                 boolean foundIntermediateNodes = false;
 
-                //TODO : compute time cost depending on tag "max_speed"
+                //TODO : allow cost depending on tag "one_pass"
                 double cost = 0;
                 for (int k = 1; k < children.getLength(); ++k) {
                     Node child = children.item(k);
                     Element element2 = (Element) child;
-                    long curNode = Long.parseLong(element2.getAttribute("ref"));
+                    long nextNode = Long.parseLong(element2.getAttribute("ref"));
 
-                    if(usedNodes.get(startNode) != null && usedNodes.get(curNode) != null) {
-                        double lat1 = usedNodes.get(startNode).getLat();
-                        double lon1 = usedNodes.get(startNode).getLon();
-                        double lat2 = usedNodes.get(curNode).getLat();
-                        double lon2 = usedNodes.get(curNode).getLon();
+                    if(usedNodes.get(curNode) != null && usedNodes.get(nextNode) != null) {
+                        double lat1 = usedNodes.get(curNode).getLat();
+                        double lon1 = usedNodes.get(curNode).getLon();
+                        double lat2 = usedNodes.get(nextNode).getLat();
+                        double lon2 = usedNodes.get(nextNode).getLon();
                         cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
                                 new heig.osmparser.model.Node(0, lat2, lon2, 0)) / maxSpeed;
+                        curNode = nextNode;
                     }
 
                     if (g.getAdjList().containsKey(curNode)) {
@@ -247,8 +249,8 @@ public class Parser {
                 }
 
                 if(foundIntermediateNodes) {
-                    //g.getAdjList().get(firstNode).removeIf(way -> way.getToId() == lastNode);
-                    //g.getAdjList().get(lastNode).removeIf(way -> way.getToId() == firstNode);
+                    g.getAdjList().get(firstNode).removeIf(way -> way.getToId() == lastNode);
+                    g.getAdjList().get(lastNode).removeIf(way -> way.getToId() == firstNode);
                 }
             }
 
