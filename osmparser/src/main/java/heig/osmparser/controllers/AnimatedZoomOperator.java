@@ -4,8 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Bounds;
-import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 public class AnimatedZoomOperator {
@@ -50,25 +49,5 @@ public class AnimatedZoomOperator {
                 new KeyFrame(Duration.millis(200), new KeyValue(node.scaleYProperty(), scale))
         );
         timeline.play();
-        timeline.setOnFinished(e -> {
-            //System.out.println(pane.getScaleX());
-            //String url = "file:./input/tiles/tile" + (int) (pane.getPrefWidth() * pane.getScaleX()) + ".png";
-            System.out.println((int) (pane.getScaleX() * pane.getPrefWidth()));
-            //pane.setStyle("-fx-background-image: url(" + url + ");");
-            // create a image
-            String url = "file:./src/main/resources/heig/osmparser/tiles/tile" + (int) (pane.getPrefWidth() * pane.getScaleX()) + ".png";
-            Image image = new Image(url);
-            // create a background image
-            BackgroundImage backgroundimage = new BackgroundImage(image,
-                    BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT,
-                    BackgroundPosition.DEFAULT,
-                    new BackgroundSize(1.0, 1.0, true, true, false, false));
-            // create Background
-            Background background = new Background(backgroundimage);
-            // set background
-            pane.setBackground(background);
-        });
-
     }
 }

@@ -2,9 +2,7 @@ package heig.osmparser.utils.parsers;
 
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Way;
-import heig.osmparser.net.OverpassAPIClient;
 import heig.osmparser.utils.maths.Maths;
-import javafx.util.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -192,17 +190,20 @@ public class Parser {
                 String roadType = getRoadType(node);
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
+                long startNode = firstNode;
+                long lastNode = Long.parseLong(((Element) children.item(children.getLength() - 1)).getAttribute("ref"));
+                boolean foundIntermediateNodes = false;
+
                 //TODO : compute time cost depending on tag "max_speed"
                 double cost = 0;
-
                 for (int k = 1; k < children.getLength(); ++k) {
                     Node child = children.item(k);
                     Element element2 = (Element) child;
                     long curNode = Long.parseLong(element2.getAttribute("ref"));
 
-                    if(usedNodes.get(firstNode) != null && usedNodes.get(curNode) != null) {
-                        double lat1 = usedNodes.get(firstNode).getLat();
-                        double lon1 = usedNodes.get(firstNode).getLon();
+                    if(usedNodes.get(startNode) != null && usedNodes.get(curNode) != null) {
+                        double lat1 = usedNodes.get(startNode).getLat();
+                        double lon1 = usedNodes.get(startNode).getLon();
                         double lat2 = usedNodes.get(curNode).getLat();
                         double lon2 = usedNodes.get(curNode).getLon();
                         cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
@@ -210,10 +211,16 @@ public class Parser {
                     }
 
                     if (g.getAdjList().containsKey(curNode)) {
-                        g.addEdge(firstNode, curNode, cost, roadType == null ? "" : roadType);
-                        g.addEdge(curNode, firstNode, cost, roadType == null ? "" : roadType);
-                        firstNode = curNode; cost = 0.0;
+                        if(curNode != lastNode) foundIntermediateNodes = true;
+                        g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
+                        g.addEdge(curNode, startNode, cost, roadType == null ? "" : roadType);
+                        startNode = curNode; cost = 0.0;
                     }
+                }
+
+                if(foundIntermediateNodes) {
+                    g.getAdjList().get(firstNode).removeIf(way -> way.getToId() == lastNode);
+                    g.getAdjList().get(lastNode).removeIf(way -> way.getToId() == firstNode);
                 }
             }
 
