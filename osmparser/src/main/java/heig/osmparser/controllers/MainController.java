@@ -27,13 +27,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.web.WebView;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -66,29 +60,6 @@ public class MainController implements Initializable {
     private HashMap<Long, Circle> nodesCircles;
     private Node selectedNode;
     private final double zoomFactor = 1.6;
-
-    private static InputStream withValidHeaders(URL url) {
-        try {
-            HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
-            // we need to set some params in the headers
-            httpcon.addRequestProperty("User-Agent", "Mozilla/4.0");
-            // because of the error message : please specify a valid referer
-            httpcon.addRequestProperty("Referer", "https://wiki.openstreetmap.org");
-            return httpcon.getInputStream();
-        } catch (IOException e) {
-            String error = e.toString();
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static int saveImage(String query, String destinationFile) throws IOException {
-        try (InputStream in = withValidHeaders(new URL(query))) {
-            Files.copy(in, Paths.get(destinationFile), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -157,11 +128,11 @@ public class MainController implements Initializable {
                     firstNodeChoosen = false;
                     g.dijkstra(from.getId());
                 } else {
-                    System.out.println("path");
                     Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                     firstNodeChoosen = true;
                     //TODO wait that dijkstra is done
                     drawPath(g.getShortestPath(to));
+                    System.out.println("time cost : " + g.getLambda().get(to.getId()) / 60d + " minutes");
                 }
             }
         });

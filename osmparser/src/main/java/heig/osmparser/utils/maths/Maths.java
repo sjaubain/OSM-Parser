@@ -53,12 +53,11 @@ public abstract class Maths {
         return R * c;
     }
 
-    // TODO : use haversine instead of MN03
+    /*
+     * return distance between two nodes in meters
+     */
     public static double distanceNodes(Node n1, Node n2) {
-        int[] shape1 = Maths.latsToMN03(n1.getLat(), n1.getLon());
-        int[] shape2 = Maths.latsToMN03(n2.getLat(), n2.getLon());
-        double dX = Math.abs((double)(shape2[0] - shape1[0])), dY = Math.abs((double)(shape2[1] - shape1[1]));
-        return dX * dX + dY * dY;
+        return haversine(n1.getLat(), n1.getLon(), n2.getLat(), n2.getLon()) * 1000;
     }
 
     public static double distanceGPS(double lat1, double lon1, double lat2, double lon2) {

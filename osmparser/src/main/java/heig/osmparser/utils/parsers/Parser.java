@@ -129,6 +129,20 @@ public class Parser {
                 Node node = nodes.item(i);
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
+
+                double maxSpeed = 13.8; // default speed
+                NodeList tags = element.getElementsByTagName("tag");
+                for (int k = 1; k < tags.getLength(); ++k) {
+                    Node child = tags.item(k);
+                    Element element2 = (Element) child;
+                    String key = element2.getAttribute("k");
+                    if(key.equals("maxspeed")) {
+                        String maxSpeedStr = element2.getAttribute("v");
+                        if(isInteger(maxSpeedStr)) {
+                            maxSpeed = Integer.parseInt(element2.getAttribute("v")) / 3.6;
+                        }
+                    }
+                }
                 String roadType = getRoadType(node);
 
                 // first node of the road
@@ -154,7 +168,7 @@ public class Parser {
                         double lat2 = usedNodes.get(next).getLat();
                         double lon2 = usedNodes.get(next).getLon();
                         cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
-                                new heig.osmparser.model.Node(0, lat2, lon2, 0));
+                                new heig.osmparser.model.Node(0, lat2, lon2, 0)) / maxSpeed;
                     }
                 }
                 g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
@@ -187,6 +201,20 @@ public class Parser {
                 Node node = nodes.item(i);
                 Element element = (Element) node;
                 NodeList children = element.getElementsByTagName("nd");
+
+                double maxSpeed = 13.8; // default speed
+                NodeList tags = element.getElementsByTagName("tag");
+                for (int k = 1; k < tags.getLength(); ++k) {
+                    Node child = tags.item(k);
+                    Element element2 = (Element) child;
+                    String key = element2.getAttribute("k");
+                    if(key.equals("maxspeed")) {
+                        String maxSpeedStr = element2.getAttribute("v");
+                        if(isInteger(maxSpeedStr)) {
+                            maxSpeed = 0.85 * Integer.parseInt(element2.getAttribute("v")) / 3.6;
+                        }
+                    }
+                }
                 String roadType = getRoadType(node);
 
                 long firstNode = Long.parseLong(((Element) children.item(0)).getAttribute("ref"));
@@ -207,7 +235,7 @@ public class Parser {
                         double lat2 = usedNodes.get(curNode).getLat();
                         double lon2 = usedNodes.get(curNode).getLon();
                         cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
-                                new heig.osmparser.model.Node(0, lat2, lon2, 0));
+                                new heig.osmparser.model.Node(0, lat2, lon2, 0)) / maxSpeed;
                     }
 
                     if (g.getAdjList().containsKey(curNode)) {
@@ -219,8 +247,8 @@ public class Parser {
                 }
 
                 if(foundIntermediateNodes) {
-                    g.getAdjList().get(firstNode).removeIf(way -> way.getToId() == lastNode);
-                    g.getAdjList().get(lastNode).removeIf(way -> way.getToId() == firstNode);
+                    //g.getAdjList().get(firstNode).removeIf(way -> way.getToId() == lastNode);
+                    //g.getAdjList().get(lastNode).removeIf(way -> way.getToId() == firstNode);
                 }
             }
 
@@ -255,6 +283,14 @@ public class Parser {
         }
 
         return null;
+    }
+
+    private boolean isInteger(String str) {
+        for(int i = 0; i < str.length(); ++i) {
+            if(!Character.isDigit(str.charAt(i)))
+                return false;
+        }
+        return true;
     }
 }
 
