@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 import java.util.HashMap;
 
 public abstract class Config {
-    public static HashMap<String, Double> roadTypeStrokeWidth = new HashMap<>() {{
+    public static HashMap<String, Double> roadTypeStrokeWidth = new HashMap<String, Double>() {{
         put("", 0.4);
         put("motorway", 0.6);
         put("motorway_link", 0.6);
@@ -21,7 +21,7 @@ public abstract class Config {
         put("residential", 0.08);
     }};
 
-    public static HashMap<String, Color> roadTypeColor = new HashMap<>() {{
+    public static HashMap<String, Color> roadTypeColor = new HashMap<String, Color>() {{
         put("", Color.RED);
         put("motorway", Color.ORANGE);
         put("motorway_link", Color.ORANGE);
