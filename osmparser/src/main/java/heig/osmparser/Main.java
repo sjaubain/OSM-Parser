@@ -1,18 +1,12 @@
 package heig.osmparser;
 
-import heig.osmparser.model.Graph;
-import heig.osmparser.utils.converters.EPSConverter;
-import heig.osmparser.utils.parsers.Parser;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 
 public class Main extends Application {
 
