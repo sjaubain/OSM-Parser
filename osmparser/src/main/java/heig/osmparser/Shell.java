@@ -27,13 +27,13 @@ public class Shell {
                     controller.log(command, Log.LogLevels.INFO);
                 });
                 if (isWindows) {
-                    //process = Runtime.getRuntime().exec(""cmd /c " + command");
                     ProcessBuilder builder = new ProcessBuilder("CMD", "/C",  command);
                     builder.redirectErrorStream(true);
                     process = builder.start();
                 } else {
-                    //final Process exec = new ProcessBuilder("bash", "-c", query).start();
-                    process = Runtime.getRuntime().exec("sh -c " + command);
+                    ProcessBuilder builder = new ProcessBuilder("sh", "-c", command);
+                    builder.redirectErrorStream(true);
+                    process = builder.start();
                 }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line = "";

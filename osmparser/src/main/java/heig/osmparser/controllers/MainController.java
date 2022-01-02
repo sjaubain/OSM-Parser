@@ -153,52 +153,57 @@ public class MainController implements Initializable {
     public String[] generateOsmosisCommands() {
 
         // looking for .pbf file
-        File folder = new File("./input");
-        File[] listOfFiles = folder.listFiles();
-        String pbfFile = "./input/";
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                if(listOfFiles[i].getName().contains(".pbf")) {
-                    pbfFile += listOfFiles[i].getName();
+        try {
+            File folder = new File("./input");
+            File[] listOfFiles = folder.listFiles();
+            String pbfFile = "./input/";
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
+                    if (listOfFiles[i].getName().contains(".pbf")) {
+                        pbfFile += listOfFiles[i].getName();
+                    }
                 }
             }
-        }
 
-        String boundingBox = " --bounding-box" +
-                " top=" + maxlat.getText() +
-                " left=" + minlon.getText() +
-                " bottom=" + minlat.getText() +
-                " right=" + maxlon.getText();
-        String commandWays = "osmosis --read-pbf " + pbfFile
-                // assuming user has not given bounds yet
-                + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
-        String commandCities = "osmosis --read-pbf " + pbfFile
-                + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
-        int nbPlace = 0, nbRoad = 0;
-        String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
-        ObservableList choices = importChoices.getChildren();
-        for(Object choice : choices) {
-            RadioButton rb = ((RadioButton) choice);
-            if(rb.isSelected()) {
-                // we use 'I' as a delimiter in the fx id because special chars are not allowed
-                String choiceKey = rb.getId(), choiceValue = choiceKey.substring(choiceKey.indexOf("I") + 1);
-                switch (choiceKey.substring(0, choiceKey.indexOf("I"))) {
-                    case "place":
-                        places += (nbPlace > 0 ? "," : "") + choiceValue;
-                        nbPlace++;
-                        break;
-                    case "highway":
-                        roads += (nbRoad > 0 ? "," : "") + choiceValue;
-                        nbRoad++;
-                        break;
-                    default:
-                        break;
+            String boundingBox = " --bounding-box" +
+                    " top=" + maxlat.getText() +
+                    " left=" + minlon.getText() +
+                    " bottom=" + minlat.getText() +
+                    " right=" + maxlon.getText();
+            String commandWays = "osmosis --read-pbf " + pbfFile
+                    // assuming user has not given bounds yet
+                    + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
+            String commandCities = "osmosis --read-pbf " + pbfFile
+                    + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
+            int nbPlace = 0, nbRoad = 0;
+            String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
+            ObservableList choices = importChoices.getChildren();
+            for (Object choice : choices) {
+                RadioButton rb = ((RadioButton) choice);
+                if (rb.isSelected()) {
+                    // we use 'I' as a delimiter in the fx id because special chars are not allowed
+                    String choiceKey = rb.getId(), choiceValue = choiceKey.substring(choiceKey.indexOf("I") + 1);
+                    switch (choiceKey.substring(0, choiceKey.indexOf("I"))) {
+                        case "place":
+                            places += (nbPlace > 0 ? "," : "") + choiceValue;
+                            nbPlace++;
+                            break;
+                        case "highway":
+                            roads += (nbRoad > 0 ? "," : "") + choiceValue;
+                            nbRoad++;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
+            commandWays += roads + " --tf reject-relations --un --wx ./input/ways.osm";
+            commandCities += places + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
+            return new String[]{commandWays, commandCities};
+        } catch(Exception e) {
+            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project", Log.LogLevels.WARNING);
+            return new String[]{"echo no ways to parse", "echo no cities to parse"};
         }
-        commandWays += roads + " --tf reject-relations --un --wx ./input/ways.osm";
-        commandCities += places + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
-        return new String[]{commandWays, commandCities};
     }
 
     void displayGraphBounds() {
