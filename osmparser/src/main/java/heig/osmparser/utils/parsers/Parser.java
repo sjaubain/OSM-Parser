@@ -75,7 +75,7 @@ public class Parser {
         return null;
     }
 
-    public Graph toGraph(String filename) {
+    public Graph toGraph(String filename) throws IOException, SAXException, ParserConfigurationException {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
@@ -234,10 +234,8 @@ public class Parser {
             g.setAdjList(newAdjList);
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+            throw e;
         }
-
-        return null;
     }
 
     private double getMaxSpeed(Element way) {

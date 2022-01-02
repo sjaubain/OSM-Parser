@@ -8,8 +8,8 @@ import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.Parser;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
@@ -52,26 +52,19 @@ public class MainController implements Initializable {
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
-    private Task<Integer> task;
     private Shell shell;
+    private Parser parser;
     private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
     private HashMap<Long, Circle> nodesCircles;
     private Node selectedNode;
     private final double zoomFactor = 1.6;
+    private Group shortestPathLines;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        // V  V  V  V | VERY IMPORTANT HERE BELOW !!!! | V  V  V  V
-        //https://render.openstreetmap.org/cgi-bin/export?bbox=27.58006095886231,53.84102923969372,27.599630355834964,53.865178733516636&scale=20413&format=png
-/*
-        webView.getEngine().loadContent("<iframe width=\"425\" height=\"350\" frameborder=\"0\" scrolling=\"no\" " +
-                "marginheight=\"0\" marginwidth=\"0\" " +
-
-                "style=\"border: 1px solid black\"></iframe><br/><small><a href=\"https://www.openstreetmap.org/?mlat=46.7175&amp;mlon=6.6254#map=11/46.7175/6.6254\">Afficher une carte plus grande</a></small>");
-*/
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsPane.toFront(); logsPane.setPickOnBounds(false);
         actionAreaSelection.setSelected(true);
@@ -79,37 +72,8 @@ public class MainController implements Initializable {
 
         nodesCircles = new HashMap<>();
         g = new Graph();
-
         shell = new Shell(this);
-
-        task = new Task() {
-            @Override
-            protected Integer call() throws Exception {
-                try {
-                    Parser parser = new Parser();
-                    g = parser.toGraph("./input/ways.osm");
-                    //parser.addCities(g, "./input/cities.osm");
-                    //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-                    return 0;
-                } catch(Exception e) {
-                    log(e.getStackTrace().toString(), Log.LogLevels.ERROR);
-                    return -1;
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            // we're on the JavaFX application thread here
-            Integer result = task.getValue();
-            log("parsing done. drawing graph", Log.LogLevels.INFO);
-            drawGraph();
-            displayGraphBounds();
-
-        });
-
-        task.setOnFailed(e -> {
-            log("parsing error. " + e.toString(), Log.LogLevels.ERROR);
-        });
+        parser = new Parser();
 
         actionAreaSelection.setOnAction(e -> {
             current_action = ACTION_PERFORM.AREA_SELECTION;
@@ -197,12 +161,18 @@ public class MainController implements Initializable {
                     }
                 }
             }
-            commandWays += roads + " --tf reject-relations --un --wx ./input/ways.osm";
-            commandCities += places + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
+
+            // if user didn't give args at all
+            if(nbPlace == 0 && nbRoad == 0) {
+                log("You did not provide any parameter to parse", Log.LogLevels.WARNING);
+                return new String[]{"", ""};
+            }
+            commandWays += (nbRoad == 0 ? "" : roads) + " --tf reject-relations --un --wx ./input/ways.osm";
+            commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
         } catch(Exception e) {
             log("you seem not to have an input file with a .pbf file (put it on the root folder of the project", Log.LogLevels.WARNING);
-            return new String[]{"echo no ways to parse", "echo no cities to parse"};
+            return new String[]{"", ""};
         }
     }
 
@@ -235,9 +205,17 @@ public class MainController implements Initializable {
     }
 
     public void loadGraph() {
-        if(!task.isRunning()) {
-            new Thread(task).start();
-        }
+        new Thread(() -> {
+            try {
+                g = parser.toGraph("./input/ways.osm");
+                //parser.addCities(g, "./input/cities.osm");
+                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+            } catch(Exception e) {
+                Platform.runLater(() -> {
+                    log(e.toString(), Log.LogLevels.ERROR);
+                });
+            }
+        }).start();
     }
 
     public void importData() {
@@ -247,8 +225,6 @@ public class MainController implements Initializable {
             shell.exec(command);
         }
     }
-
-    private Group shortestPathLines;
 
     public void drawPath(List<Node> nodes) {
 
@@ -407,7 +383,9 @@ public class MainController implements Initializable {
         TextField newText = new TextField(msg);
         newText.setText(msg); newText.setEditable(false);
         if(logLevel.equals(Log.LogLevels.INFO))
-            newText.setStyle("-fx-text-fill: green");
+            newText.setStyle("-fx-text-fill: darkgreen");
+        else if(logLevel.equals(Log.LogLevels.WARNING))
+            newText.setStyle("-fx-text-fill: darkorange");
         else
             newText.setStyle("-fx-text-fill: red");
 
