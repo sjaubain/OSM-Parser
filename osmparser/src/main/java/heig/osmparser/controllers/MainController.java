@@ -82,7 +82,6 @@ public class MainController implements Initializable {
             current_action = ACTION_PERFORM.DIJKSTRA;
         });
 
-
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
            if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
                 double[] coords = getLatLonFromMousePos(event.getX(), event.getY());
@@ -94,7 +93,6 @@ public class MainController implements Initializable {
                 } else {
                     Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                     firstNodeChoosen = true;
-                    //TODO wait that dijkstra is done
                     drawPath(g.getShortestPath(to));
                     System.out.println("time cost : " + 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes");
                 }
