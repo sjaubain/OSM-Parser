@@ -18,6 +18,6 @@ echo "building project with maven"
 mvn -f pom_linux.xml clean package
 
 echo "fetching jar file"
-mv ./target/osmparser-1.0-SNAPSHOT-launcher.jar .
+mv -f ./target/osmparser-1.0-SNAPSHOT-launcher.jar .
 
 echo "------END-------"
