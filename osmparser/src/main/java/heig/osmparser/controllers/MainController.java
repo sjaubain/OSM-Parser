@@ -169,7 +169,7 @@ public class MainController implements Initializable {
             commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
         } catch(Exception e) {
-            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project", Log.LogLevels.WARNING);
+            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)", Log.LogLevels.WARNING);
             return new String[]{"", ""};
         }
     }
@@ -381,11 +381,13 @@ public class MainController implements Initializable {
         TextField newText = new TextField(msg);
         newText.setText(msg); newText.setEditable(false);
         if(logLevel.equals(Log.LogLevels.INFO))
-            newText.setStyle("-fx-text-fill: darkgreen");
+            newText.setStyle("-fx-text-fill: #1a1919");
         else if(logLevel.equals(Log.LogLevels.WARNING))
             newText.setStyle("-fx-text-fill: darkorange");
-        else
+        else if(logLevel.equals(Log.LogLevels.ERROR))
             newText.setStyle("-fx-text-fill: red");
+        else
+            newText.setStyle("-fx-text-fill: darkgreen");
 
         logsListView.getItems().add(logsListView.getItems().size(), newText);
         logsListView.scrollTo(logsListView.getItems().size() - 1);
