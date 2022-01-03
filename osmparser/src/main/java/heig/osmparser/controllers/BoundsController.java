@@ -32,6 +32,9 @@ public class BoundsController implements Initializable {
     private int mapWidth = 2000;
     private int mapHeight = 857;
     private Box box;
+    private double[] bounds;
+    private double[] upperLeft, bottomRight;
+    private static final double[] worldBounds = {-180, 90, 180, -90};
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -58,16 +61,26 @@ public class BoundsController implements Initializable {
             e.printStackTrace();
         }
 
+        bounds = new double[4]; upperLeft = new double[2]; bottomRight = new double[2];
+
         // Area selection events
         mapPane2.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if(e.getButton().equals(MouseButton.PRIMARY)) {
                 box = new Box(mapPane2, e.getX(), e.getY());
+                if(mainController != null) {
+                    upperLeft = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
+                    mainController.displayBounds(new double[]{upperLeft[1], upperLeft[0], bottomRight[1], bottomRight[0]});
+                }
             }
         });
 
         mapPane2.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
             if(e.getButton().equals(MouseButton.PRIMARY)) {
                 box.render(e.getX(), e.getY());
+                if(mainController != null) {
+                    bottomRight = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
+                    mainController.displayBounds(new double[]{upperLeft[1], upperLeft[0], bottomRight[1], bottomRight[0]});
+                }
             }
         });
 

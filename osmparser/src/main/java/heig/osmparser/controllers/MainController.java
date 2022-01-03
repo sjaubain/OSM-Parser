@@ -9,7 +9,6 @@ import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.GraphParser;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -77,6 +76,7 @@ public class MainController implements Initializable {
             stage.setResizable(false);
             stage.setScene(scene);
             stage.show();
+            ((BoundsController)(fxmlLoader.getController())).setMainController(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,7 +104,7 @@ public class MainController implements Initializable {
 
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
            if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
-                double[] coords = getLatLonFromMousePos(event.getX(), event.getY());
+                double[] coords = getLatLonFromMousePos(event.getX(), event.getY(), g.getBounds(), mapPane);
                 if(firstNodeChoosen) {
                     System.out.println("dijkstra");
                     Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
@@ -122,14 +122,6 @@ public class MainController implements Initializable {
         // Create operators for zoom and drag on map
         AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
-    }
-
-    public double[] getGPSCoordsFromMousePos(double x, double y) {
-        double[] bounds = g.getBounds();
-        int[] shape1 = Maths.latsToMN03(bounds[1], bounds[0]); // upper left corner
-        int[] shape2 = Maths.latsToMN03(bounds[3], bounds[2]); // bottom right corner
-        return new double[]{bounds[0] + x / mapPane.getWidth()  * (bounds[2] - bounds[0]),
-                bounds[3] + (mapPane.getHeight() - y) / mapPane.getHeight() * (bounds[1] - bounds[3])};
     }
 
     public String[] generateOsmosisCommands() {
@@ -194,46 +186,44 @@ public class MainController implements Initializable {
         }
     }
 
-    void displayGraphBounds() {
-        double[] bounds = g.getBounds();
-        minlon.setText(String.valueOf(bounds[0]));
-        maxlat.setText(String.valueOf(bounds[1]));
-        maxlon.setText(String.valueOf(bounds[2]));
-        minlat.setText(String.valueOf(bounds[3]));
+    void displayBounds(double[] bounds) {
+        if(bounds.length == 4) {
+            minlon.setText(String.valueOf(bounds[0]));
+            maxlat.setText(String.valueOf(bounds[1]));
+            maxlon.setText(String.valueOf(bounds[2]));
+            minlat.setText(String.valueOf(bounds[3]));
+        }
     }
 
-    double[] getLatLonFromMousePos(double x, double y) {
-        double[] latLon = new double[2];
-        if(!minlat.getText().isEmpty()) { // meaning other bounds are not empty too
-            // scales
-            // TODO : factorize this for getting bounds
-            double[] bounds = g.getBounds();
-            double ratioX = x / mapPane.getPrefWidth();
-            double ratioY = y / mapPane.getPrefHeight();
-            double fromLat = bounds[1];
-            double toLat = bounds[3];
-            double fromLon = bounds[0];
-            double toLon = bounds[2];
-            latLon = new double[]{
-                    Maths.round(fromLat + ratioY * (toLat - fromLat), 4),
-                    Maths.round(fromLon + ratioX * (toLon - fromLon), 4)
-            };
-        }
+    double[] getLatLonFromMousePos(double x, double y, double[] bounds, Pane pane) {
+
+        double[] latLon;
+
+        double ratioX = x / pane.getPrefWidth();
+        double ratioY = y / pane.getPrefHeight();
+        double fromLat = bounds[1];
+        double toLat = bounds[3];
+        double fromLon = bounds[0];
+        double toLon = bounds[2];
+        latLon = new double[]{
+                Maths.round(fromLat + ratioY * (toLat - fromLat), 4),
+                Maths.round(fromLon + ratioX * (toLon - fromLon), 4)
+        };
+
         return latLon;
     }
 
     public void loadGraph() {
-        new Thread(() -> {
-            try {
-                g = parser.toGraph("./input/ways.osm");
-                //parser.addCities(g, "./input/cities.osm");
-                //EPSConverter.graphToEPS(g, "./output/drawing.ps");
-            } catch(Exception e) {
-                Platform.runLater(() -> {
-                    log(e.toString(), Log.LogLevels.ERROR);
-                });
-            }
-        }).start();
+
+        try {
+            g = parser.toGraph("./input/ways.osm");
+            drawGraph();
+            displayBounds(g.getBounds());
+            //parser.addCities(g, "./input/cities.osm");
+            //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+        } catch(Exception e) {
+            log(e.toString(), Log.LogLevels.ERROR);
+        }
     }
 
     public void importData() {

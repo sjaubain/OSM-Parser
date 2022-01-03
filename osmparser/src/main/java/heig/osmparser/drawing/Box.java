@@ -36,19 +36,12 @@ public class Box {
 
     public void render(double endX, double endY) {
 
-        if(endX < startX) {
-            rectangle.setX(endX);
-            if(endY < startY)
-                rectangle.setY(endY);
-        } else if(endY < startY) {
-            rectangle.setY(endY);
-        } else {
+        if(endX > startX && endY > startY) {
             rectangle.setX(startX);
             rectangle.setY(startY);
+            rectangle.setWidth(Math.abs(endX - startX));
+            rectangle.setHeight(Math.abs(endY - startY));
         }
-
-        rectangle.setWidth(Math.abs(endX - startX));
-        rectangle.setHeight(Math.abs(endY - startY));
     }
 
     public Rectangle getRectangle() {
