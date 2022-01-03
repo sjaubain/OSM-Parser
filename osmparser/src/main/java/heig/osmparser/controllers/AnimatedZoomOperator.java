@@ -35,7 +35,7 @@ public class AnimatedZoomOperator {
         double oldScale = node.getScaleX();
         double scale = oldScale * factor;
         double f = (scale / oldScale) - 1;
-        System.out.println("scale : " + oldScale);
+
         // determine offset that we will have to move the node
         Bounds bounds = node.localToScene(node.getBoundsInLocal());
         double dx = (x - (bounds.getWidth() / 2 + bounds.getMinX()));

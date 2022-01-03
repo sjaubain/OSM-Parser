@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="mainPane" stylesheets="@styles.css" prefHeight="400.0" prefWidth="400.0"
+            xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="heig.osmparser.controllers.BoundsController">
+    <Pane fx:id="mapPane2">
+
+    </Pane>
+
+</AnchorPane>

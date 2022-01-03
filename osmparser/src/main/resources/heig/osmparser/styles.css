@@ -7,6 +7,11 @@
     -fx-background-color: #000000;
 }
 
+#mapPane2 {
+    -fx-border-radius: 2px;
+    -fx-background-color: #ececec;
+}
+
 #btnReduceLogs {
     -fx-background-image: url("reduce.png");
     -fx-focus-color: transparent;

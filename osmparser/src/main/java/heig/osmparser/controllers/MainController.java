@@ -1,5 +1,6 @@
 package heig.osmparser.controllers;
 
+import heig.osmparser.Main;
 import heig.osmparser.Shell;
 import heig.osmparser.configs.Config;
 import heig.osmparser.model.Graph;
@@ -7,12 +8,14 @@ import heig.osmparser.model.Node;
 import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
-import heig.osmparser.utils.parsers.Parser;
+import heig.osmparser.utils.parsers.GraphParser;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -25,8 +28,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +58,7 @@ public class MainController implements Initializable {
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
     private Shell shell;
-    private Parser parser;
+    private GraphParser parser;
     private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
@@ -61,6 +66,21 @@ public class MainController implements Initializable {
     private Node selectedNode;
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
+
+    public void chooseBounds() {
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("bounds.fxml"));
+        Scene scene = null; Stage stage = null;
+        try {
+            stage = new Stage();
+            scene = new Scene(fxmlLoader.load(), 400, 400);
+            stage.setTitle("Choose Bounds");
+            stage.setResizable(false);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -73,7 +93,7 @@ public class MainController implements Initializable {
         nodesCircles = new HashMap<>();
         g = new Graph();
         shell = new Shell(this);
-        parser = new Parser();
+        parser = new GraphParser();
 
         actionAreaSelection.setOnAction(e -> {
             current_action = ACTION_PERFORM.AREA_SELECTION;

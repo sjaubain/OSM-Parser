@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Parser {
+public class GraphParser {
 
-    public final static Logger LOG = Logger.getLogger(Parser.class.getName());
+    public final static Logger LOG = Logger.getLogger(GraphParser.class.getName());
 
     public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
 
