@@ -1,9 +1,6 @@
 package heig.osmparser.model;
 
-import heig.osmparser.controllers.MainController;
-import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
-import javafx.fxml.Initializable;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -67,7 +64,7 @@ public class Graph {
         Node minNode = new Node();
         double minDist = Double.MAX_VALUE;
         for(Node n : nodes.values()) {
-            double curDist = Maths.distanceGPS(n.getLat(), n.getLon(), lat, lon);
+            double curDist = Maths.haversine(+n.getLat(), n.getLon(), lat, lon);
             if(curDist < minDist) {
                 minDist = curDist;
                 minNode = n;

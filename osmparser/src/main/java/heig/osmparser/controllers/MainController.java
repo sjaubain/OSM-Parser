@@ -105,6 +105,7 @@ public class MainController implements Initializable {
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
            if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
                 double[] coords = getLatLonFromMousePos(event.getX(), event.getY(), g.getBounds(), mapPane);
+               System.out.println(coords[0] + "   " + coords[1]);
                 if(firstNodeChoosen) {
                     System.out.println("dijkstra");
                     Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
@@ -197,20 +198,29 @@ public class MainController implements Initializable {
 
     double[] getLatLonFromMousePos(double x, double y, double[] bounds, Pane pane) {
 
-        double[] latLon;
-
         double ratioX = x / pane.getPrefWidth();
         double ratioY = y / pane.getPrefHeight();
-        double fromLat = bounds[1];
-        double toLat = bounds[3];
-        double fromLon = bounds[0];
-        double toLon = bounds[2];
-        latLon = new double[]{
-                Maths.round(fromLat + ratioY * (toLat - fromLat), 4),
-                Maths.round(fromLon + ratioX * (toLon - fromLon), 4)
-        };
 
-        return latLon;
+        double yTop = 1;
+        double yBottom = -1;
+        double xLeft = -1;
+        double xRight = 1;
+
+        double boundsMapScaleY = Maths.mapProjection(bounds[1], 0)[1] - Maths.mapProjection(bounds[3], 0)[1];
+        double boundsMapOffY = Maths.mapProjection(Maths.MAX_LAT, 0)[1] - Maths.mapProjection(bounds[1], 0)[1];
+        ratioY = (ratioY * boundsMapScaleY + boundsMapOffY) / Maths.WORLD_MAP_SCALE;
+
+        double boundsMapScaleX = Maths.mapProjection(0, bounds[2])[0] - Maths.mapProjection(0 , bounds[0])[0];
+        double boundsMapOffX = Maths.mapProjection(0, bounds[0])[0] - Maths.mapProjection(0, -Maths.MAX_LON)[0];
+        ratioX = (ratioX * boundsMapScaleX + boundsMapOffX) / Maths.WORLD_MAP_SCALE;
+
+        double interpolatedX = xLeft + ratioX * (xRight - xLeft);
+        double interpolatedY = yTop + ratioY * (yBottom - yTop);
+
+        double[] latLon = Maths.mapProjectionInv(interpolatedX, interpolatedY);
+
+        return new double[]{Maths.round(latLon[0], 4),
+                            Maths.round(latLon[1], 4)};
     }
 
     public void loadGraph() {

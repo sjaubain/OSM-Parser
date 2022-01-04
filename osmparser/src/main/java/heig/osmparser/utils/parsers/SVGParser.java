@@ -29,7 +29,7 @@ public class SVGParser {
                 Node path = paths.item(i);
                 Element element = (Element) path;
                 String pathStr = element.getAttribute("d");
-                ret += pathStr + " ";
+                ret += pathStr;
             }
             return ret;
         } catch (ParserConfigurationException | SAXException | IOException e) {

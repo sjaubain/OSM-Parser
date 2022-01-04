@@ -1,6 +1,7 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.drawing.Box;
+import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.SVGParser;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -30,33 +31,42 @@ public class BoundsController implements Initializable {
     private MainController mainController;
     private double zoomFactor = 1.6;
     private int mapWidth = 2000;
-    private int mapHeight = 857;
+    private int mapHeight = 2000;
     private Box box;
     private double[] bounds;
     private double[] upperLeft, bottomRight;
-    private static final double[] worldBounds = {-180, 90, 180, -90};
+    // those bounds correspond to the map world.svg, which covers
+    // all the world map projected with Mercator formula. We cannot
+    // use 90° and -90° because it would mean that the y coordinate
+    // would be infinity and -infinity respectively
+    private static final double[] worldBounds = {-180, Maths.MAX_LAT, 180, -Maths.MAX_LAT};
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        //Creating a SVGPath object
         try {
-
             mapPane2.setPrefHeight(mapHeight);
             mapPane2.setPrefWidth(mapWidth);
-            mapPane2.setTranslateX(-800);
+            mapPane2.setTranslateX(-1 * (mapWidth - 400) / 2d);
+            mapPane2.setTranslateY(-1 * (mapHeight - 400) / 2d);
 
             SVGParser parser = new SVGParser();
             SVGPath svgPath = new SVGPath();
             // styling
-            svgPath.setFill((Paint.valueOf("transparent")));
+            svgPath.setFill((Paint.valueOf("#b5f6ff")));
             svgPath.setStroke(Paint.valueOf("black"));
             svgPath.setStrokeWidth(0.2);
 
-            String path = parser.toString("./src/main/resources/heig/osmparser/word.svg");
-            svgPath.setContent(path);
+            String paths = parser.toString("./src/main/resources/heig/osmparser/world.svg");
+            svgPath.setContent(paths);
             Group root = new Group(svgPath);
+
+            // it was computed in order to cover the best possible
+            // the osm map square Mercator projection
+            root.setTranslateY(80);
             mapPane2.getChildren().add(root);
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
