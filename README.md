@@ -1,6 +1,6 @@
 # OSM Parser - Graph builder
 
-![](screenshot.png){style="display: block; margin: 0 auto"}
+<img src="screenshot.png" style="display: block; margin: 0 auto" />
 
 ## Overview
 
