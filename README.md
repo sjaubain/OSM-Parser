@@ -12,9 +12,13 @@ The documentation and source code for osmosis can be found here :
 
 ## Status
 
-Can be used. Work in progress. Please report all bugs.
+Work still in progress. Please report all bugs.
 
 ## Installation
+
+```bash
+git clone https://github.com/sjaubain/OSM-Parser.git
+```
 
 ### Requirements
 * Java set up on your machine
@@ -22,11 +26,11 @@ Can be used. Work in progress. Please report all bugs.
 
 Since JavaFX components don't come with Java development kit after version 8, it is strongly recommended to use version 8. If you are using a later version, you can temporarily downgrade it to 1.8. Otherwise, you will have to install JavaFX separately and set up your environment correctly.
 
-* Windows and Mac
+* **Windows and Mac**
 
 As mentioned above, you can install the JDK 8 if you don't still have it. You may have to set the environment variable. Please refer for example to [this site](https://www.java.com/en/download/help/windows_manual_download.html) for more details. Once installed, type `java -version` to check that everything is correct. You should be able to launch the application by simply click on the .jar file.
 
-* Ubuntu
+* **Ubuntu**
 
 With the linux based OSs, it is a little more tricky to set up javaFX, but there is a script called *linux_setup.sh* that install automatically all required tools. Just type
 ```bash
