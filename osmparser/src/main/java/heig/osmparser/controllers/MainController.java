@@ -9,6 +9,7 @@ import heig.osmparser.model.Way;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.GraphParser;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,9 +27,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -51,8 +53,6 @@ public class MainController implements Initializable {
     private RadioButton actionAreaSelection, actionDijkstra;
     @FXML
     private VBox importChoices;
-    @FXML
-    private WebView webView;
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -93,7 +93,7 @@ public class MainController implements Initializable {
         nodesCircles = new HashMap<>();
         g = new Graph();
         shell = new Shell(this);
-        parser = new GraphParser();
+        parser = new GraphParser(this);
 
         actionAreaSelection.setOnAction(e -> {
             current_action = ACTION_PERFORM.AREA_SELECTION;
@@ -182,7 +182,8 @@ public class MainController implements Initializable {
             commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
         } catch(Exception e) {
-            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)", Log.LogLevels.WARNING);
+            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)",
+                    Log.LogLevels.WARNING);
             return new String[]{"", ""};
         }
     }
@@ -224,13 +225,20 @@ public class MainController implements Initializable {
     }
 
     public void loadGraph() {
-
         try {
-            g = parser.toGraph("./input/ways.osm");
-            drawGraph();
-            displayBounds(g.getBounds());
-            //parser.addCities(g, "./input/cities.osm");
-            //EPSConverter.graphToEPS(g, "./output/drawing.ps");
+            log("starting to parse file, please wait...", Log.LogLevels.INFO);
+            new Thread(() -> {
+                try {
+                    g = parser.toGraph("./input/ways.osm");
+                    //parser.addCities(g, "./input/cities.osm");
+                } catch (IOException | SAXException | ParserConfigurationException e) {
+                    log(e.toString(), Log.LogLevels.ERROR);
+                }
+                Platform.runLater(() -> {
+                    drawGraph();
+                    displayBounds(g.getBounds());
+                });
+            }).start();
         } catch(Exception e) {
             log(e.toString(), Log.LogLevels.ERROR);
         }
@@ -258,11 +266,11 @@ public class MainController implements Initializable {
 
             Node n1 = nodes.get(i), n2 = nodes.get(i + 1);
             double[] nodeShape1 = Maths.mapProjection(n1.getLat(), n1.getLon());
-            double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-            double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+            double startX = (nodeShape1[0] - shape1[0]) * mapPane.getPrefWidth() / mapShape[0];
+            double startY = -1 * (nodeShape1[1] - shape1[1]) * mapPane.getPrefHeight() / mapShape[1];
             double[] nodeShape2 = Maths.mapProjection(n2.getLat(), n2.getLon());
-            double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / (double) mapShape[0];
-            double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / (double) mapShape[1];
+            double endX = (nodeShape2[0] - shape1[0]) * mapPane.getPrefWidth() / mapShape[0];
+            double endY = -1 * (nodeShape2[1] - shape1[1]) * mapPane.getPrefHeight() / mapShape[1];
 
             Line line = new Line(startX, startY, endX, endY);
             line.setStroke(Color.BLUE);
@@ -324,76 +332,8 @@ public class MainController implements Initializable {
                         mapPane.getChildren().add(line);
                     }
                 }
-
-
-                /*
-                //TODO : make a function addNodeCircle
-                Circle circle = new Circle(0.1, Color.WHITE);
-                circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double) mapShape[0]);
-                // times -1 because y axis is in reverse side (downside)
-                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * factorY / (double) mapShape[1]);
-                circle.setOnMouseClicked(e -> {
-                    for(Circle c : nodesCircles.values()) {
-                        c.setFill(Color.WHITE);
-                    }
-                    circle.setFill(Color.RED);
-                    circle.toFront();
-                    if(current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
-                        selectedNode = n1;
-                        if(firstNodeChoosen) {
-                            System.out.println("dijkstra");
-                            firstNodeChoosen = false;
-                            g.dijkstra(selectedNode.getId());
-                        } else {
-                            firstNodeChoosen = true;
-                            //TODO wait that dijkstra is done
-                            System.out.println(g.getShortestPath(selectedNode).size());
-                            drawPath(g.getShortestPath(selectedNode));
-                        }
-                    }
-                });
-
-                circle.setOnMouseEntered(e -> {
-                    circle.setRadius(circle.getRadius() * 3);
-                });
-
-                circle.setOnMouseExited(e -> {
-                    circle.setRadius(circle.getRadius() / 3);
-                });
-
-                nodesCircles.put(n1.getId(), circle);
-                mapPane.getChildren().add(circle);
-                */
             }
         }
-
-
-        /*
-        // draw cities
-        int maxPop = g.getMaxPopulation();
-        double maxRadius = Math.sqrt(300);
-
-        int[] c1 = {255, 255, 0}; // yellow
-        int[] c2 = {255, 0, 0}; // red
-
-        for(Node n : cities.values()) {
-
-            double radius = Math.sqrt(300 * n.getPopulation() / (double)maxPop);
-            double scale =  (1 - (radius / maxRadius));
-
-            Platform.runLater(() -> {
-                // color gradient between yellow and red
-                Color c = Color.rgb(255, (int)((c1[1] - c2[1]) * scale),0);
-                Circle circle = new Circle(radius, c);
-                int[] nodeShape = Maths.latsToMN03(n.getLat(), n.getLon());
-
-                circle.setLayoutX((nodeShape[0] - shape1[0]) * factorX / (double)mapShape[0]);
-                // times -1 because y axis is in reverse side (downside)
-                circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * factorY / (double)mapShape[1]);
-                mapPane.getChildren().add(circle);
-            });
-        }
-        */
     }
 
     public void log(String msg, Log.LogLevels logLevel) {

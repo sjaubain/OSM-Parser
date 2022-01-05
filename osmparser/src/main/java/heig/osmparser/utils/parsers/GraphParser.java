@@ -1,8 +1,11 @@
 package heig.osmparser.utils.parsers;
 
+import heig.osmparser.controllers.MainController;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Way;
+import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
+import javafx.application.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -17,12 +20,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GraphParser {
 
     public final static Logger LOG = Logger.getLogger(GraphParser.class.getName());
+
+    private MainController controller;
+
+    public GraphParser(MainController controller) {
+        this.controller = controller;
+    }
 
     public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
 
@@ -85,7 +93,9 @@ public class GraphParser {
             Document doc = db.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
-            LOG.log(Level.INFO, "parsing bounds");
+            Platform.runLater(() -> {
+                controller.log("parsing bounds", Log.LogLevels.INFO);
+            });
 
             NodeList nodes = doc.getElementsByTagName("bounds");
             if(nodes.getLength() != 0) {
@@ -111,7 +121,9 @@ public class GraphParser {
                 usedNodes.put(n, new heig.osmparser.model.Node(n, lat, lon, 0));
             }
 
-            LOG.log(Level.INFO, "parsing ways");
+            Platform.runLater(() -> {
+                controller.log("parsing ways", Log.LogLevels.INFO);
+            });
 
             // connect all nodes with ways of type route
             HashMap<String, Boolean> registeredNodes = new HashMap<>();
@@ -148,7 +160,10 @@ public class GraphParser {
                 g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
                 g.addEdge(n2, n1, cost, roadType == null ? "" : roadType);
             }
-            LOG.log(Level.INFO, "parsing nodes");
+
+            Platform.runLater(() -> {
+                controller.log("parsing nodes", Log.LogLevels.INFO);
+            });
 
             // retrieve all nodes, just keep those who are at the beginning and end of each way
             nodes = doc.getElementsByTagName("node");
@@ -165,7 +180,9 @@ public class GraphParser {
                 }
             }
 
-            LOG.log(Level.INFO, "resolving unconnected ways");
+            Platform.runLater(() -> {
+                controller.log("resolving unconnected ways", Log.LogLevels.INFO);
+            });
 
             // first retrieve again all the ways
             nodes = doc.getElementsByTagName("way");
@@ -209,7 +226,9 @@ public class GraphParser {
                 }
             }
 
-            LOG.log(Level.INFO, "resolving missing nodes");
+            Platform.runLater(() -> {
+                controller.log("resolving missing nodes", Log.LogLevels.INFO);
+            });
 
             // remove from adjList all node ids that have not been found in the file
             // because we must know the coordinates of such nodes.
@@ -219,6 +238,7 @@ public class GraphParser {
             // THIS STEP IS VERY IMPORTANT BECAUSE EACH NODE IN THE WAYS MUST BE KNOWN (LAT & LON)
             // reconstruct the new cleaned adjList with only the ids whose nodes
             // can be retrieved
+            int nbEdges = 0;
             for (long id : curAdjList.keySet()) {
                 if (g.getNodes().containsKey(id)) {
                     newAdjList.put(id, new LinkedList<>());
@@ -226,12 +246,18 @@ public class GraphParser {
                         Way w = curAdjList.get(id).get(i);
                         long id2 = w.getToId();
                         if (g.getNodes().containsKey(id2)) {
+                            nbEdges++;
                             newAdjList.get(id).add(new Way(id, id2, w.getCost(), w.getRoadType()));
                         }
                     }
                 }
             }
             g.setAdjList(newAdjList);
+            int finalNbEdges = nbEdges;
+            Platform.runLater(() -> {
+                controller.log("parsing done. " + g.getAdjList().size() + " nodes, " + finalNbEdges + " edges.",
+                        Log.LogLevels.INFO);
+            });
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw e;

@@ -12,7 +12,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.web.WebView;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -25,9 +24,6 @@ public class BoundsController implements Initializable {
     @FXML
     private Pane mapPane2;
 
-    @FXML
-    private WebView webView;
-
     private MainController mainController;
     private double zoomFactor = 1.6;
     private int mapWidth = 2000;
@@ -39,7 +35,7 @@ public class BoundsController implements Initializable {
     // all the world map projected with Mercator formula. We cannot
     // use 90° and -90° because it would mean that the y coordinate
     // would be infinity and -infinity respectively
-    private static final double[] worldBounds = {-180, Maths.MAX_LAT, 180, -Maths.MAX_LAT};
+    private static final double[] worldBounds = {-Maths.MAX_LON, Maths.MAX_LAT, Maths.MAX_LON, -Maths.MAX_LAT};
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,8 +43,8 @@ public class BoundsController implements Initializable {
         try {
             mapPane2.setPrefHeight(mapHeight);
             mapPane2.setPrefWidth(mapWidth);
-            mapPane2.setTranslateX(-1 * (mapWidth - 400) / 2d);
-            mapPane2.setTranslateY(-1 * (mapHeight - 400) / 2d);
+            mapPane2.setTranslateX(-1 * (mapWidth - mainPane.getPrefWidth()) / 2d);
+            mapPane2.setTranslateY(-1 * (mapHeight - mainPane.getPrefHeight()) / 2d);
 
             SVGParser parser = new SVGParser();
             SVGPath svgPath = new SVGPath();
@@ -65,7 +61,6 @@ public class BoundsController implements Initializable {
             // the osm map square Mercator projection
             root.setTranslateY(80);
             mapPane2.getChildren().add(root);
-
 
         } catch (Exception e) {
             e.printStackTrace();
