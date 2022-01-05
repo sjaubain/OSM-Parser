@@ -22,7 +22,7 @@ git clone https://github.com/sjaubain/OSM-Parser.git
 
 ### Requirements
 * Java set up on your machine
-* Osmosis installed (follow instruction in official site)
+* Osmosis installed (follow instruction on official site)
 
 Since JavaFX components don't come with Java development kit after version 8, it is strongly recommended to use version 8. If you are using a later version, you can temporarily downgrade it to 1.8. Otherwise, you will have to install JavaFX separately and set up your environment correctly.
 
@@ -47,3 +47,7 @@ If you get errors, try to check if the correct version of JDK is used on your ma
 sudo update-alternatives --config java
 ```
 and same for javac, the java compiler. Try to rerun the script and this should be ok.
+
+## Usage
+
+Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). Then click on *import* and wait for osmosis to do its job. After you have loaded the graph, you can zoom and drag with right mouse button on the map. To compute shortest paths, you just have to click twice on the map to choose source and destination nodes. 
