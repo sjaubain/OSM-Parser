@@ -32,6 +32,10 @@ public class GraphParser {
         this.controller = controller;
     }
 
+    public GraphParser() {
+        this.controller = null;
+    }
+
     public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -93,9 +97,7 @@ public class GraphParser {
             Document doc = db.parse(new File(filename));
             doc.getDocumentElement().normalize();
 
-            Platform.runLater(() -> {
-                controller.log("parsing bounds", Log.LogLevels.INFO);
-            });
+            sendMessageToController("parsing bounds", Log.LogLevels.INFO);
 
             NodeList nodes = doc.getElementsByTagName("bounds");
             if(nodes.getLength() != 0) {
@@ -121,9 +123,7 @@ public class GraphParser {
                 usedNodes.put(n, new heig.osmparser.model.Node(n, lat, lon, 0));
             }
 
-            Platform.runLater(() -> {
-                controller.log("parsing ways", Log.LogLevels.INFO);
-            });
+            sendMessageToController("parsing ways", Log.LogLevels.INFO);
 
             // connect all nodes with ways of type route
             HashMap<String, Boolean> registeredNodes = new HashMap<>();
@@ -161,9 +161,7 @@ public class GraphParser {
                 g.addEdge(n2, n1, cost, roadType == null ? "" : roadType);
             }
 
-            Platform.runLater(() -> {
-                controller.log("parsing nodes", Log.LogLevels.INFO);
-            });
+            sendMessageToController("parsing nodes", Log.LogLevels.INFO);
 
             // retrieve all nodes, just keep those who are at the beginning and end of each way
             nodes = doc.getElementsByTagName("node");
@@ -180,9 +178,7 @@ public class GraphParser {
                 }
             }
 
-            Platform.runLater(() -> {
-                controller.log("resolving unconnected ways", Log.LogLevels.INFO);
-            });
+            sendMessageToController("resolving unconnected ways", Log.LogLevels.INFO);
 
             // first retrieve again all the ways
             nodes = doc.getElementsByTagName("way");
@@ -226,9 +222,7 @@ public class GraphParser {
                 }
             }
 
-            Platform.runLater(() -> {
-                controller.log("resolving missing nodes", Log.LogLevels.INFO);
-            });
+            sendMessageToController("resolving missing nodes", Log.LogLevels.INFO);
 
             // remove from adjList all node ids that have not been found in the file
             // because we must know the coordinates of such nodes.
@@ -254,13 +248,21 @@ public class GraphParser {
             }
             g.setAdjList(newAdjList);
             int finalNbEdges = nbEdges;
-            Platform.runLater(() -> {
-                controller.log("parsing done. " + g.getAdjList().size() + " nodes, " + finalNbEdges + " edges.",
-                        Log.LogLevels.INFO);
-            });
+
+            sendMessageToController("parsing done. " + g.getAdjList().size() + " nodes, " + finalNbEdges + " edges.",
+                    Log.LogLevels.INFO);
+
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw e;
+        }
+    }
+
+    private void sendMessageToController(String msg, Log.LogLevels level) {
+        if(this.controller != null) {
+            Platform.runLater(() -> {
+                controller.log(msg, level);
+            });
         }
     }
 

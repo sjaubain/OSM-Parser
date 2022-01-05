@@ -73,7 +73,6 @@ public class MainController implements Initializable {
             stage = new Stage();
             scene = new Scene(fxmlLoader.load(), 400, 400);
             stage.setTitle("Choose Bounds");
-            stage.setResizable(false);
             stage.setScene(scene);
             stage.show();
             ((BoundsController)(fxmlLoader.getController())).setMainController(this);

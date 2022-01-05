@@ -31,6 +31,8 @@ public class BoundsController implements Initializable {
     private Box box;
     private double[] bounds;
     private double[] upperLeft, bottomRight;
+    private static double OFF_Y = 80;
+
     // those bounds correspond to the map world.svg, which covers
     // all the world map projected with Mercator formula. We cannot
     // use 90° and -90° because it would mean that the y coordinate
@@ -49,17 +51,20 @@ public class BoundsController implements Initializable {
             SVGParser parser = new SVGParser();
             SVGPath svgPath = new SVGPath();
             // styling
-            svgPath.setFill((Paint.valueOf("#b5f6ff")));
+            svgPath.setFill((Paint.valueOf("#e8e8e8")));
             svgPath.setStroke(Paint.valueOf("black"));
-            svgPath.setStrokeWidth(0.2);
+            svgPath.setStrokeWidth(0.25);
 
+            // adding a cross in the middle of the map
+            String crossLine1 = "M" + (mapWidth / 2 - 8) + " " +  (mapHeight / 2 - OFF_Y) + "L" + (mapWidth / 2 + 8) + " " +  (mapHeight / 2 - OFF_Y);
+            String crossLine2 = "M" + mapWidth / 2 + " " +  (mapHeight / 2 - OFF_Y - 8) + "L" + mapWidth / 2 + " " +  (mapHeight / 2 + - OFF_Y + 8);
             String paths = parser.toString("./src/main/resources/heig/osmparser/world.svg");
-            svgPath.setContent(paths);
+            svgPath.setContent(paths + crossLine1 + crossLine2);
             Group root = new Group(svgPath);
 
             // it was computed in order to cover the best possible
             // the osm map square Mercator projection
-            root.setTranslateY(80);
+            root.setTranslateY(OFF_Y);
             mapPane2.getChildren().add(root);
 
         } catch (Exception e) {
@@ -71,6 +76,7 @@ public class BoundsController implements Initializable {
         // Area selection events
         mapPane2.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if(e.getButton().equals(MouseButton.PRIMARY)) {
+                if(box != null) box.removeRectangleFromPane();
                 box = new Box(mapPane2, e.getX(), e.getY());
                 if(mainController != null) {
                     upperLeft = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
@@ -86,12 +92,6 @@ public class BoundsController implements Initializable {
                     bottomRight = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
                     mainController.displayBounds(new double[]{upperLeft[1], upperLeft[0], bottomRight[1], bottomRight[0]});
                 }
-            }
-        });
-
-        mapPane2.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-            if(e.getButton().equals(MouseButton.PRIMARY)) {
-                box.removeRectangleFromPane();
             }
         });
 
