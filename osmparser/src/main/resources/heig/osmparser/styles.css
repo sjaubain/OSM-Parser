@@ -19,8 +19,8 @@
 }
 
 #btnReduceLogs:hover {
-    -fx-focus-color: blue;
-    -fx-faint-focus-color: blue;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 #btnLoad {
