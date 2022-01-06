@@ -39,7 +39,7 @@ sudo bash linux_setup.sh
 To run the application, type
 
 ```bash
-sudo bash linux_launcher.
+sudo bash linux_launcher
 ```
 If you get errors, try to check if the correct version of JDK is used on your machine with `java -version`. If two or more JDKs are installed you can choose which one you want to use with
 
@@ -50,4 +50,4 @@ and same for javac, the java compiler. Try to rerun the script and this should b
 
 ## Usage
 
-Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). Then click on *import* and wait for osmosis to do its job. After you have loaded the graph, you can zoom and drag with right mouse button on the map. To compute shortest paths, you just have to click twice on the map to choose source and destination nodes. 
+Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). Then click on *import* and wait for osmosis to do its job. After you have loaded the graph, you can zoom and drag with right mouse button on the map. To compute shortest paths, you just have to click twice on the map to choose source and destination nodes. (Warning : if your request involves too many nodes, you will get a java heap out of space memory exception)
