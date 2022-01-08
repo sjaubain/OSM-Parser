@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="mainPane" stylesheets="@styles.css" prefHeight="400.0" prefWidth="400.0"
+<AnchorPane fx:id="mainPane" prefHeight="400.0" prefWidth="400.0" stylesheets="@styles.css"
             xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="heig.osmparser.controllers.BoundsController">
     <Pane fx:id="mapPane2"/>
+    <Button fx:id="btnOk" onAction="#closePage" layoutX="185.0" layoutY="364.0" mnemonicParsing="false" text="Ok"/>
 </AnchorPane>

@@ -6,12 +6,14 @@ import heig.osmparser.utils.parsers.SVGParser;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.SVGPath;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -23,6 +25,9 @@ public class BoundsController implements Initializable {
 
     @FXML
     private Pane mapPane2;
+
+    @FXML
+    private Button btnOk;
 
     private MainController mainController;
     private double zoomFactor = 1.6;
@@ -98,6 +103,11 @@ public class BoundsController implements Initializable {
         // Create operators for zoom and drag on map
         AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane2, zoomFactor);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane2);
+    }
+
+    public void closePage() {
+        Stage stage = (Stage) btnOk.getScene().getWindow();
+        stage.close();
     }
 
     public void setMainController(MainController mainController) {

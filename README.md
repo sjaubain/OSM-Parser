@@ -23,6 +23,11 @@ git clone https://github.com/sjaubain/OSM-Parser.git
 ### Requirements
 * Java set up on your machine
 * Osmosis installed (follow instruction on official site)
+For Linux, enter following command :
+
+```bash
+sudo apt install osmosis
+```
 
 Since JavaFX components don't come with Java development kit after version 8, it is strongly recommended to use version 8. If you are using a later version, you can temporarily downgrade it to 1.8. Otherwise, you will have to install JavaFX separately and set up your environment correctly.
 
