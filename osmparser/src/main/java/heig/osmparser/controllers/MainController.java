@@ -86,7 +86,7 @@ public class MainController implements Initializable {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsPane.toFront(); logsPane.setPickOnBounds(false);
-        actionAreaSelection.setSelected(true);
+        actionDijkstra.setSelected(true);
         mapPane.toBack();
 
         nodesCircles = new HashMap<>();
@@ -104,9 +104,8 @@ public class MainController implements Initializable {
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
            if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
                 double[] coords = getLatLonFromMousePos(event.getX(), event.getY(), g.getBounds(), mapPane);
-               System.out.println(coords[0] + "   " + coords[1]);
+                log("coords : " + coords[0] + ", " + coords[1], Log.LogLevels.INFO);
                 if(firstNodeChoosen) {
-                    System.out.println("dijkstra");
                     Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                     firstNodeChoosen = false;
                     g.dijkstra(from.getId());
@@ -114,7 +113,7 @@ public class MainController implements Initializable {
                     Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                     firstNodeChoosen = true;
                     drawPath(g.getShortestPath(to));
-                    System.out.println("time cost : " + 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes");
+                    log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
                 }
             }
         });
