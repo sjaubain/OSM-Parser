@@ -284,7 +284,7 @@ public class MainController implements Initializable {
 
     public void drawGraph() {
 
-        mapPane.getChildren().clear(); background = null;
+        mapPane.getChildren().clear(); mapPane.setBackground(Background.EMPTY);
 
         HashMap<Long, Node> cities = g.getCities();
 

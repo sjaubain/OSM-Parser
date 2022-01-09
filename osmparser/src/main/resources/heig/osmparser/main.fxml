@@ -3,8 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0" prefWidth="1100.0"
-            stylesheets="@styles.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
+<AnchorPane fx:id="mainPane" maxHeight="700.0" maxWidth="1100.0" minHeight="700.0" minWidth="1100.0" prefHeight="700.0" prefWidth="1100.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="heig.osmparser.controllers.MainController">
     <children>
         <MenuBar prefHeight="28.0" prefWidth="1100.0" AnchorPane.bottomAnchor="670.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <menus>
@@ -46,15 +45,15 @@
                                         </RadioButton>
                                         <RadioButton fx:id="actionDijkstra" mnemonicParsing="false" text="Shortest Paths" toggleGroup="$action" translateX="25.0" />
                                         <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#loadGraph" prefHeight="25.0" prefWidth="67.0" text="load" translateX="35.0" />
+                                        <Button fx:id="btnShowBackground" mnemonicParsing="false" onAction="#showBackground" prefHeight="25.0" prefWidth="135.0" text="show background" translateX="35.0" />
                                     </items>
                                 </ToolBar>
                             </children>
                         </Pane>
-                        <Pane fx:id="mapPane"/>
+                        <Pane fx:id="mapPane" />
                     </children>
                 </AnchorPane>
                 <AnchorPane minWidth="200.0">
-
                     <children>
                         <TextField fx:id="minlon" layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
                         <TextField fx:id="maxlat" layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
@@ -84,7 +83,6 @@
                             </children>
                         </VBox>
                         <Label layoutX="87.0" layoutY="145.0" text="IMPORT" />
-                        <Label layoutX="86.0" layoutY="468.0" text="EXPORT" />
                         <Button fx:id="btnImport" layoutX="79.0" layoutY="435.0" mnemonicParsing="false" onAction="#importData" text="import" />
                         <Button fx:id="btnChooseBounds" layoutX="62.0" layoutY="114.0" mnemonicParsing="false" onAction="#chooseBounds" text="choose bounds" />
                     </children>
