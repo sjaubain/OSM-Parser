@@ -19,11 +19,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -65,21 +64,12 @@ public class MainController implements Initializable {
     private Node selectedNode;
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
+    private Background background;
+    private boolean backgroundDisplayed = false;
 
-    public void chooseBounds() {
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("bounds.fxml"));
-        Scene scene = null; Stage stage = null;
-        try {
-            stage = new Stage();
-            scene = new Scene(fxmlLoader.load(), 400, 400);
-            stage.setTitle("Choose Bounds");
-            stage.setScene(scene);
-            stage.show();
-            ((BoundsController)(fxmlLoader.getController())).setMainController(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // todo : store in another place
+    private final static String API_KEY = "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0" +
+            "wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -120,6 +110,21 @@ public class MainController implements Initializable {
         // Create operators for zoom and drag on map
         AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
+    }
+
+    public void chooseBounds() {
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("bounds.fxml"));
+        Scene scene = null; Stage stage = null;
+        try {
+            stage = new Stage();
+            scene = new Scene(fxmlLoader.load(), 400, 400);
+            stage.setTitle("Choose Bounds");
+            stage.setScene(scene);
+            stage.show();
+            ((BoundsController)(fxmlLoader.getController())).setMainController(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String[] generateOsmosisCommands() {
@@ -279,6 +284,8 @@ public class MainController implements Initializable {
 
     public void drawGraph() {
 
+        mapPane.getChildren().clear(); background = null;
+
         HashMap<Long, Node> cities = g.getCities();
 
         //default metric for MN03 is centimeter
@@ -290,20 +297,42 @@ public class MainController implements Initializable {
 
         // multiplied by -1 because y-axis is in reverse side (downside)
         double[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
-        double ratioHoverW = mapShape[1] / (double) mapShape[0];
+        double ratioHoverW = mapShape[1] / mapShape[0];
         // auto scale map within screen (depending on zoom level, see : https://wiki.openstreetmap.org/wiki/Zoom_levels)
-        double defaultWidth = 400;
+        double defaultWidth = 400; double defaultHeight = 400;
         if(ratioHoverW > 1) {
             mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth / ratioHoverW) / 2);
             mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth) / 2);
             mapPane.setPrefHeight(defaultWidth); mapPane.setPrefWidth(defaultWidth / ratioHoverW);
+            defaultWidth = defaultWidth / ratioHoverW;
         } else {
             mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth) / 2);
             mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth * ratioHoverW) / 2);
             mapPane.setPrefHeight(defaultWidth * ratioHoverW); mapPane.setPrefWidth(defaultWidth);
+            defaultHeight = defaultWidth * ratioHoverW;
         }
         double factorX = mapPane.getPrefWidth();
         double factorY = mapPane.getPrefHeight();
+
+        if(defaultWidth > defaultHeight) {
+            defaultWidth = 1280; defaultHeight = ratioHoverW * 1280;
+        } else {
+            defaultHeight = 1280; defaultWidth = 1280 / ratioHoverW;
+        }
+
+        String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
+                + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/"
+                + (int) defaultWidth + "x" + (int) defaultHeight
+                + "@2x?access_token=" + API_KEY;
+        Image image = new Image(url);
+        // create a background image
+        BackgroundImage backgroundimage = new BackgroundImage(image,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT,
+                new BackgroundSize(1.0, 1.0, true, true, false, false));
+        // create Background
+        background = new Background(backgroundimage);
 
         // draw roads
         double[] nodeShape;
@@ -329,6 +358,18 @@ public class MainController implements Initializable {
                         mapPane.getChildren().add(line);
                     }
                 }
+            }
+        }
+    }
+
+    public void showBackground() {
+        if(mapPane.getPrefWidth() != 0) {
+            if(!backgroundDisplayed) {
+                backgroundDisplayed = true;
+                mapPane.setBackground(background);
+            } else {
+                backgroundDisplayed = false;
+                mapPane.setBackground(Background.EMPTY);
             }
         }
     }
