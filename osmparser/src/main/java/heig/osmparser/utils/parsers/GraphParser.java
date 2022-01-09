@@ -110,7 +110,7 @@ public class GraphParser {
                 });
             }
 
-            // retrieve all used nodes composing ways
+            // retrieve all used nodes composing ways, may use a lot of memory for too big maps
             nodes = doc.getElementsByTagName("node");
             HashMap<Long, heig.osmparser.model.Node> usedNodes = new HashMap<>();
             int len = nodes.getLength();
@@ -125,7 +125,7 @@ public class GraphParser {
 
             sendMessageToController("parsing ways", Log.LogLevels.INFO);
 
-            // connect all nodes with ways of type route
+            // retrieve all nodes, just keep those who are at the beginning and end of each way
             HashMap<String, Boolean> registeredNodes = new HashMap<>();
             nodes = doc.getElementsByTagName("way");
 
@@ -163,7 +163,8 @@ public class GraphParser {
 
             sendMessageToController("parsing nodes", Log.LogLevels.INFO);
 
-            // retrieve all nodes, just keep those who are at the beginning and end of each way
+            // add to graph all nodes at the beginning and end of each way
+            // (those who have been retrieved during adjList construction)
             nodes = doc.getElementsByTagName("node");
             for (int i = 0; i < len; i++) {
                 Node node = nodes.item(i);

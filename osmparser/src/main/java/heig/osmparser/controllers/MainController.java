@@ -86,7 +86,6 @@ public class MainController implements Initializable {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
         logsPane.toFront(); logsPane.setPickOnBounds(false);
-        actionDijkstra.setSelected(true);
         mapPane.toBack();
 
         nodesCircles = new HashMap<>();
