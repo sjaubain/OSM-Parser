@@ -6,6 +6,7 @@ import heig.osmparser.configs.Config;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.model.Way;
+import heig.osmparser.utils.converters.CSVConverter;
 import heig.osmparser.utils.logs.Log;
 import heig.osmparser.utils.maths.Maths;
 import heig.osmparser.utils.parsers.GraphParser;
@@ -17,6 +18,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -52,6 +54,8 @@ public class MainController implements Initializable {
     private RadioButton actionAreaSelection, actionDijkstra;
     @FXML
     private VBox importChoices;
+    @FXML
+    private MenuItem mnitmExportCSV;
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -107,6 +111,11 @@ public class MainController implements Initializable {
                     log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
                 }
            }
+        });
+
+        mnitmExportCSV.setOnAction(event -> {
+            log("exporting CSV file", Log.LogLevels.INFO);
+            CSVConverter.graphToCSV(g);
         });
 
         // Create operators for zoom and drag on map
