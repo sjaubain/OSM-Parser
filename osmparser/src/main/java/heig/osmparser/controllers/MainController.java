@@ -15,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
@@ -41,7 +42,7 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     @FXML
-    private AnchorPane mainPane;
+    private AnchorPane leftPane;
     @FXML
     private Pane logsPane;
     @FXML
@@ -55,7 +56,7 @@ public class MainController implements Initializable {
     @FXML
     private VBox importChoices;
     @FXML
-    private MenuItem mnitmExportCSV;
+    private MenuItem mnitmExportCSV, mnitmEdit, mnitmHelp;
 
     private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -114,7 +115,7 @@ public class MainController implements Initializable {
         });
 
         mnitmExportCSV.setOnAction(event -> {
-            log("exporting CSV file", Log.LogLevels.INFO);
+            log("exporting CSV file to output/ dir", Log.LogLevels.INFO);
             CSVConverter.graphToCSV(g);
         });
 
@@ -293,11 +294,15 @@ public class MainController implements Initializable {
         mapPane.getChildren().add(shortestPathLines);
     }
 
+    private void resetBackground() {
+        mapPane.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0), CornerRadii.EMPTY, Insets.EMPTY)));
+    }
+
     public void drawGraph() {
 
         // reset the map
         mapShapesGroup.getChildren().clear();
-        mapPane.getChildren().clear(); mapPane.setBackground(Background.EMPTY);
+        mapPane.getChildren().clear(); resetBackground(); mapShapesGroup.setVisible(true);
         mapPane.setLayoutX(0); mapPane.setLayoutY(0);
 
         HashMap<Long, Node> cities = g.getCities();
@@ -384,7 +389,7 @@ public class MainController implements Initializable {
                 mapShapesGroup.setVisible(false);
             } else {
                 backgroundDisplayed = false;
-                mapPane.setBackground(Background.EMPTY);
+                resetBackground();
                 mapShapesGroup.setVisible(true);
             }
         }
