@@ -20,8 +20,8 @@ jobs:
       uses: actions/setup-java@v2
       with:
         java-version: '8'
-        distributio: 'adopt'
-        javafx: true
+        distribution: 'adopt'
+        java-package: 'jdk+fx'
         cache: maven
     - name: Build with Maven
       working-directory: ./osmparser
