@@ -46,7 +46,7 @@ To run the application, type
 ```bash
 sudo bash linux_launcher
 ```
-If you get errors, try to check if the correct version of JDK is used on your machine with `java -version`. If two or more JDKs are installed you can choose which one you want to use with
+If you get errors, try to check if you have a valid JDK installed on your machine with `java -version`. If two or more JDKs are installed you can choose which one you want to use with
 
 ```bash
 sudo update-alternatives --config java
