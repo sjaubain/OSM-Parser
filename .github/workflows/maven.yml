@@ -23,7 +23,7 @@ jobs:
         distribution: 'adopt'
         cache: maven
     - name: Set up jfx
-      run: apt-get install -y openjfx
+      run: sudo apt-get install -y openjfx
     - name: Build with Maven
       working-directory: ./osmparser
       run: mvn clean package
