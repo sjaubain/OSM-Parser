@@ -39,7 +39,7 @@ import java.util.ResourceBundle;
 public class MainController implements Initializable {
 
     @FXML
-    private AnchorPane leftPane;
+    private AnchorPane mainPane;
     @FXML
     private Pane logsPane;
     @FXML
@@ -61,14 +61,16 @@ public class MainController implements Initializable {
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
     private HashMap<Long, Circle> nodesCircles;
-    private Node selectedNode;
+    private Group mapShapesGroup = new Group();
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
     private Background background;
     private boolean backgroundDisplayed = false;
+    private Stage stageBoundsChooser = null;
 
     // todo : store in another place
-    private final static String API_KEY = "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0" +
+    private final static String API_KEY =
+            "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0" +
             "wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";
 
     @Override
@@ -104,7 +106,7 @@ public class MainController implements Initializable {
                     drawPath(g.getShortestPath(to));
                     log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
                 }
-            }
+           }
         });
 
         // Create operators for zoom and drag on map
@@ -114,13 +116,13 @@ public class MainController implements Initializable {
 
     public void chooseBounds() {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("bounds.fxml"));
-        Scene scene = null; Stage stage = null;
+        Scene scene = null;
         try {
-            stage = new Stage();
+            stageBoundsChooser = new Stage();
             scene = new Scene(fxmlLoader.load(), 400, 400);
-            stage.setTitle("Choose Bounds");
-            stage.setScene(scene);
-            stage.show();
+            stageBoundsChooser.setTitle("Choose Bounds");
+            stageBoundsChooser.setScene(scene);
+            stageBoundsChooser.show();
             ((BoundsController)(fxmlLoader.getController())).setMainController(this);
         } catch (IOException e) {
             e.printStackTrace();
@@ -284,11 +286,13 @@ public class MainController implements Initializable {
 
     public void drawGraph() {
 
+        // reset the map
+        mapShapesGroup.getChildren().clear();
         mapPane.getChildren().clear(); mapPane.setBackground(Background.EMPTY);
+        mapPane.setLayoutX(0); mapPane.setLayoutY(0);
 
         HashMap<Long, Node> cities = g.getCities();
 
-        //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
         // upper left corner coordinates
         double[] shape1 = Maths.mapProjection(bounds[1], bounds[0]);
@@ -355,11 +359,12 @@ public class MainController implements Initializable {
                         Line line = new Line(startX, startY, endX, endY);
                         line.setStroke(Config.roadTypeColor.get(roadType));
                         line.setStrokeWidth(Config.roadTypeStrokeWidth.get(roadType));
-                        mapPane.getChildren().add(line);
+                        mapShapesGroup.getChildren().add(line);
                     }
                 }
             }
         }
+        mapPane.getChildren().add(mapShapesGroup);
     }
 
     public void showBackground() {
@@ -367,9 +372,11 @@ public class MainController implements Initializable {
             if(!backgroundDisplayed) {
                 backgroundDisplayed = true;
                 mapPane.setBackground(background);
+                mapShapesGroup.setVisible(false);
             } else {
                 backgroundDisplayed = false;
                 mapPane.setBackground(Background.EMPTY);
+                mapShapesGroup.setVisible(true);
             }
         }
     }
