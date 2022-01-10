@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -21,11 +21,12 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-        java-package: 'jdk+fx'
         cache: maven
+    - name: Set up jfx
+      run: apt-get install -y openjfx
     - name: Build with Maven
       working-directory: ./osmparser
       run: mvn clean package
     - name: Move jar file
       working-directory: ./osmparser
-      run: move -y ./target/osmparser-1.0-SNAPSHOT-launcher.jar .
+      run: mv -f ./target/osmparser-1.0-SNAPSHOT-launcher.jar .
