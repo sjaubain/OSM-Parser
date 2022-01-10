@@ -115,7 +115,7 @@ public class MainController implements Initializable {
         });
 
         mnitmExportCSV.setOnAction(event -> {
-            log("exporting CSV file to output/ directory", Log.LogLevels.INFO);
+            log("exporting CSV files to output/ directory", Log.LogLevels.INFO);
             CSVConverter.graphToCSV(g);
         });
 
