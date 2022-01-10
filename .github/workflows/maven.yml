@@ -23,6 +23,8 @@ jobs:
         distribution: 'adopt'
         cache: maven
     - name: Build with Maven
+      working-directory: /osmparser
       run: mvn clean install
     - name: Move jar file
+      working-directory: /osmparser
       run: move -y ./target/osmparser-1.0-SNAPSHOT-launcher.jar .
