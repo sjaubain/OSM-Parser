@@ -4,12 +4,12 @@ import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.model.Way;
 import heig.osmparser.utils.maths.Maths;
-import javafx.util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+//TODO : see if this part is really necessary
 public abstract class EPSConverter {
 
     public static final String DEFAULT_OUTPUT_FILENAME = "./output/cities.ps";

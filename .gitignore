@@ -1,6 +1,7 @@
-# large .osm files
-input
-output
+# large .osm files, .pbf, .csv,...
+*.osm
+*.pbf
+*.csv
 
 target/
 pom.xml.tag

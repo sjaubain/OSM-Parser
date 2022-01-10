@@ -29,8 +29,4 @@ public class Node {
     public String toString() {
         return "Node [" + id + "] : lat " + lat + ", lon : " + lon;
     }
-
-    public String toCSV() {
-        return id + "," + lat + "," + lon;
-    }
 }

@@ -9,7 +9,7 @@
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Close" />
+                        <MenuItem fx:id="mnitmExportCSV" mnemonicParsing="false" text="Export as CSV" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
