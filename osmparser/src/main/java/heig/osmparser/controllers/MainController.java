@@ -39,6 +39,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+
 public class MainController implements Initializable {
 
     @FXML
@@ -58,11 +59,13 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem mnitmExportCSV, mnitmEdit, mnitmHelp;
 
-    private final double  SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
+    private final double SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
     private Shell shell;
     private GraphParser parser;
-    private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION};
+
+    private enum ACTION_PERFORM {DIJKSTRA, AREA_SELECTION}
+
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
     private HashMap<Long, Circle> nodesCircles;
@@ -73,16 +76,22 @@ public class MainController implements Initializable {
     private boolean backgroundDisplayed = false;
     private Stage stageBoundsChooser = null;
 
+    // mouse control operators
+    private AnimatedZoomOperator zoomOperator;
+    private AnimatedDragOperator dragOperator;
+    private AnimatedBoxOperator boxOperator;
+
     // todo : store in another place
     private final static String API_KEY =
             "sk.eyJ1Ijoic2ltb25qb2JpbiIsImEiOiJja3hyYzQzbW0" +
-            "wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";
+                    "wZGZzMnBwYzZjZTY4YnNvIn0.on-zVsaICGHIiDOzrm8awQ";
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         // just to fire scroll events, otherwise it is hidden by other nodes...
-        logsPane.toFront(); logsPane.setPickOnBounds(false);
+        logsPane.toFront();
+        logsPane.setPickOnBounds(false);
         mapPane.toBack();
 
         nodesCircles = new HashMap<>();
@@ -92,26 +101,34 @@ public class MainController implements Initializable {
 
         actionAreaSelection.setOnAction(e -> {
             current_action = ACTION_PERFORM.AREA_SELECTION;
+            boxOperator = new AnimatedBoxOperator(this, mapPane, g.getBounds());
         });
         actionDijkstra.setOnAction(e -> {
             current_action = ACTION_PERFORM.DIJKSTRA;
+            if(boxOperator != null) {
+                boxOperator.getBox().removeRectangleFromPane(); boxOperator = null;
+            }
         });
 
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-           if(event.getButton().equals(MouseButton.PRIMARY) && current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
-                double[] coords = getLatLonFromMousePos(event.getX(), event.getY(), g.getBounds(), mapPane);
-                log("coords : " + coords[0] + ", " + coords[1], Log.LogLevels.INFO);
-                if(firstNodeChoosen) {
-                    Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
-                    firstNodeChoosen = false;
-                    g.dijkstra(from.getId());
-                } else {
-                    Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
-                    firstNodeChoosen = true;
-                    drawPath(g.getShortestPath(to));
-                    log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
+            if (event.getButton().equals(MouseButton.PRIMARY)) {
+                if (current_action.equals(ACTION_PERFORM.DIJKSTRA)) {
+                    double[] coords = getLatLonFromMousePos(event.getX(), event.getY(), g.getBounds(), mapPane);
+                    log("coords : " + coords[0] + ", " + coords[1], Log.LogLevels.INFO);
+                    if (firstNodeChoosen) {
+                        Node from = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
+                        firstNodeChoosen = false;
+                        g.dijkstra(from.getId());
+                    } else {
+                        Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
+                        firstNodeChoosen = true;
+                        drawPath(g.getShortestPath(to));
+                        log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
+                    }
+                } else if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
+                    // ...
                 }
-           }
+            }
         });
 
         mnitmExportCSV.setOnAction(event -> {
@@ -120,8 +137,8 @@ public class MainController implements Initializable {
         });
 
         // Create operators for zoom and drag on map
-        AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
-        AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane);
+        zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
+        dragOperator = new AnimatedDragOperator(mapPane);
     }
 
     public void chooseBounds() {
@@ -133,7 +150,7 @@ public class MainController implements Initializable {
             stageBoundsChooser.setTitle("Choose Bounds");
             stageBoundsChooser.setScene(scene);
             stageBoundsChooser.show();
-            ((BoundsController)(fxmlLoader.getController())).setMainController(this);
+            ((BoundsController) (fxmlLoader.getController())).setMainController(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -188,14 +205,14 @@ public class MainController implements Initializable {
             }
 
             // if user didn't give args at all
-            if(nbPlace == 0 && nbRoad == 0) {
+            if (nbPlace == 0 && nbRoad == 0) {
                 log("You did not provide any parameter to parse", Log.LogLevels.WARNING);
                 return new String[]{"", ""};
             }
             commandWays += (nbRoad == 0 ? "" : roads) + " --tf reject-relations --un --wx ./input/ways.osm";
             commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
-        } catch(Exception e) {
+        } catch (Exception e) {
             log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)",
                     Log.LogLevels.WARNING);
             return new String[]{"", ""};
@@ -203,7 +220,7 @@ public class MainController implements Initializable {
     }
 
     void displayBounds(double[] bounds) {
-        if(bounds.length == 4) {
+        if (bounds.length == 4) {
             minlon.setText(String.valueOf(bounds[0]));
             maxlat.setText(String.valueOf(bounds[1]));
             maxlon.setText(String.valueOf(bounds[2]));
@@ -225,7 +242,7 @@ public class MainController implements Initializable {
         double boundsMapOffY = Maths.mapProjection(Maths.MAX_LAT, 0)[1] - Maths.mapProjection(bounds[1], 0)[1];
         ratioY = (ratioY * boundsMapScaleY + boundsMapOffY) / Maths.WORLD_MAP_SCALE;
 
-        double boundsMapScaleX = Maths.mapProjection(0, bounds[2])[0] - Maths.mapProjection(0 , bounds[0])[0];
+        double boundsMapScaleX = Maths.mapProjection(0, bounds[2])[0] - Maths.mapProjection(0, bounds[0])[0];
         double boundsMapOffX = Maths.mapProjection(0, bounds[0])[0] - Maths.mapProjection(0, -Maths.MAX_LON)[0];
         ratioX = (ratioX * boundsMapScaleX + boundsMapOffX) / Maths.WORLD_MAP_SCALE;
 
@@ -235,7 +252,7 @@ public class MainController implements Initializable {
         double[] latLon = Maths.mapProjectionInv(interpolatedX, interpolatedY);
 
         return new double[]{Maths.round(latLon[0], 4),
-                            Maths.round(latLon[1], 4)};
+                Maths.round(latLon[1], 4)};
     }
 
     public void loadGraph() {
@@ -253,7 +270,7 @@ public class MainController implements Initializable {
                     displayBounds(g.getBounds());
                 });
             }).start();
-        } catch(Exception e) {
+        } catch (Exception e) {
             log(e.toString(), Log.LogLevels.ERROR);
         }
     }
@@ -261,7 +278,7 @@ public class MainController implements Initializable {
     public void importData() {
         log("starting filtering data with osmosis", Log.LogLevels.INFO);
         String[] commands = generateOsmosisCommands();
-        for(String command : commands) {
+        for (String command : commands) {
             shell.exec(command);
         }
     }
@@ -274,9 +291,9 @@ public class MainController implements Initializable {
         double[] shape2 = Maths.mapProjection(bounds[3], bounds[2]); // bottom right corner
         double[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])}; // times -1 because y axis is in reverse side (downside)
 
-        if(shortestPathLines != null) mapPane.getChildren().remove(shortestPathLines);
+        if (shortestPathLines != null) mapPane.getChildren().remove(shortestPathLines);
         shortestPathLines = new Group();
-        for(int i = 0; i < nodes.size() - 1; ++i) {
+        for (int i = 0; i < nodes.size() - 1; ++i) {
 
             Node n1 = nodes.get(i), n2 = nodes.get(i + 1);
             double[] nodeShape1 = Maths.mapProjection(n1.getLat(), n1.getLon());
@@ -302,8 +319,11 @@ public class MainController implements Initializable {
 
         // reset the map
         mapShapesGroup.getChildren().clear();
-        mapPane.getChildren().clear(); resetBackground(); mapShapesGroup.setVisible(true);
-        mapPane.setLayoutX(0); mapPane.setLayoutY(0);
+        mapPane.getChildren().clear();
+        resetBackground();
+        mapShapesGroup.setVisible(true);
+        mapPane.setLayoutX(0);
+        mapPane.setLayoutY(0);
 
         HashMap<Long, Node> cities = g.getCities();
 
@@ -317,25 +337,30 @@ public class MainController implements Initializable {
         double[] mapShape = {shape2[0] - shape1[0], -1 * (shape2[1] - shape1[1])};
         double ratioHoverW = mapShape[1] / mapShape[0];
         // auto scale map within screen (depending on zoom level, see : https://wiki.openstreetmap.org/wiki/Zoom_levels)
-        double defaultWidth = 400; double defaultHeight = 400;
-        if(ratioHoverW > 1) {
+        double defaultWidth = 400;
+        double defaultHeight = 400;
+        if (ratioHoverW > 1) {
             mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth / ratioHoverW) / 2);
             mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth) / 2);
-            mapPane.setPrefHeight(defaultWidth); mapPane.setPrefWidth(defaultWidth / ratioHoverW);
+            mapPane.setPrefHeight(defaultWidth);
+            mapPane.setPrefWidth(defaultWidth / ratioHoverW);
             defaultWidth = defaultWidth / ratioHoverW;
         } else {
             mapPane.setTranslateX((SCREEN_WIDTH - defaultWidth) / 2);
             mapPane.setTranslateY((SCREEN_HEIGHT - defaultWidth * ratioHoverW) / 2);
-            mapPane.setPrefHeight(defaultWidth * ratioHoverW); mapPane.setPrefWidth(defaultWidth);
+            mapPane.setPrefHeight(defaultWidth * ratioHoverW);
+            mapPane.setPrefWidth(defaultWidth);
             defaultHeight = defaultWidth * ratioHoverW;
         }
         double factorX = mapPane.getPrefWidth();
         double factorY = mapPane.getPrefHeight();
 
-        if(defaultWidth > defaultHeight) {
-            defaultWidth = 1280; defaultHeight = ratioHoverW * 1280;
+        if (defaultWidth > defaultHeight) {
+            defaultWidth = 1280;
+            defaultHeight = ratioHoverW * 1280;
         } else {
-            defaultHeight = 1280; defaultWidth = 1280 / ratioHoverW;
+            defaultHeight = 1280;
+            defaultWidth = 1280 / ratioHoverW;
         }
 
         String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
@@ -354,9 +379,9 @@ public class MainController implements Initializable {
 
         // draw roads
         double[] nodeShape;
-        for(Long i : g.getAdjList().keySet()) {
+        for (Long i : g.getAdjList().keySet()) {
             Node n1 = g.getNodes().get(i);
-            if(n1 != null) {
+            if (n1 != null) {
                 nodeShape = Maths.mapProjection(n1.getLat(), n1.getLon());
                 double startX = (nodeShape[0] - shape1[0]) * factorX / mapShape[0];
                 double startY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
@@ -382,8 +407,8 @@ public class MainController implements Initializable {
     }
 
     public void showBackground() {
-        if(mapPane.getPrefWidth() != 0) {
-            if(!backgroundDisplayed) {
+        if (mapPane.getPrefWidth() != 0) {
+            if (!backgroundDisplayed) {
                 backgroundDisplayed = true;
                 mapPane.setBackground(background);
                 mapShapesGroup.setVisible(false);
@@ -398,12 +423,13 @@ public class MainController implements Initializable {
     public void log(String msg, Log.LogLevels logLevel) {
 
         TextField newText = new TextField(msg);
-        newText.setText(msg); newText.setEditable(false);
-        if(logLevel.equals(Log.LogLevels.INFO))
+        newText.setText(msg);
+        newText.setEditable(false);
+        if (logLevel.equals(Log.LogLevels.INFO))
             newText.setStyle("-fx-text-fill: #1a1919");
-        else if(logLevel.equals(Log.LogLevels.WARNING))
+        else if (logLevel.equals(Log.LogLevels.WARNING))
             newText.setStyle("-fx-text-fill: darkorange");
-        else if(logLevel.equals(Log.LogLevels.ERROR))
+        else if (logLevel.equals(Log.LogLevels.ERROR))
             newText.setStyle("-fx-text-fill: red");
         else
             newText.setStyle("-fx-text-fill: darkgreen");

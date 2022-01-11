@@ -7,8 +7,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
@@ -78,28 +76,6 @@ public class BoundsController implements Initializable {
 
         bounds = new double[4]; upperLeft = new double[2]; bottomRight = new double[2];
 
-        // Area selection events
-        mapPane2.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if(e.getButton().equals(MouseButton.PRIMARY)) {
-                if(box != null) box.removeRectangleFromPane();
-                box = new Box(mapPane2, e.getX(), e.getY());
-                if(mainController != null) {
-                    upperLeft = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
-                    mainController.displayBounds(new double[]{upperLeft[1], upperLeft[0], bottomRight[1], bottomRight[0]});
-                }
-            }
-        });
-
-        mapPane2.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
-            if(e.getButton().equals(MouseButton.PRIMARY)) {
-                box.render(e.getX(), e.getY());
-                if(mainController != null) {
-                    bottomRight = mainController.getLatLonFromMousePos(e.getX(), e.getY(), worldBounds, mapPane2);
-                    mainController.displayBounds(new double[]{upperLeft[1], upperLeft[0], bottomRight[1], bottomRight[0]});
-                }
-            }
-        });
-
         // Create operators for zoom and drag on map
         AnimatedZoomOperator zoomOperator = new AnimatedZoomOperator(mapPane2, zoomFactor);
         AnimatedDragOperator dragOperator = new AnimatedDragOperator(mapPane2);
@@ -112,5 +88,6 @@ public class BoundsController implements Initializable {
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+        AnimatedBoxOperator boxOperator = new AnimatedBoxOperator(mainController, mapPane2, worldBounds);
     }
 }
