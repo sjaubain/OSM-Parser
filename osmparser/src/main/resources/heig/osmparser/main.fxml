@@ -46,6 +46,7 @@
                                         <RadioButton fx:id="actionDijkstra" mnemonicParsing="false" text="Shortest Paths" toggleGroup="$action" translateX="25.0" />
                                         <Button fx:id="btnLoad" mnemonicParsing="false" onAction="#loadGraph" prefHeight="25.0" prefWidth="67.0" text="load" translateX="35.0" />
                                         <Button fx:id="btnShowBackground" mnemonicParsing="false" onAction="#showBackground" prefHeight="25.0" prefWidth="135.0" text="show background" translateX="35.0" />
+                                        <Button fx:id="btnShowCities" mnemonicParsing="false" onAction="#showCities" text="show cities" translateX="35.0" prefHeight="25.0"/>
                                     </items>
                                 </ToolBar>
                             </children>

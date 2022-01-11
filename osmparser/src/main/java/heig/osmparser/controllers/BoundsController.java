@@ -46,11 +46,13 @@ public class BoundsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         try {
+
             mapPane2.setPrefHeight(mapHeight);
             mapPane2.setPrefWidth(mapWidth);
             mapPane2.setTranslateX(-1 * (mapWidth - mainPane.getPrefWidth()) / 2d);
             mapPane2.setTranslateY(-1 * (mapHeight - mainPane.getPrefHeight()) / 2d);
 
+            // add SVG image 'world.svg'
             SVGParser parser = new SVGParser();
             SVGPath svgPath = new SVGPath();
             // styling

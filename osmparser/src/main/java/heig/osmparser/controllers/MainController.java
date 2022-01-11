@@ -69,11 +69,11 @@ public class MainController implements Initializable {
     private ACTION_PERFORM current_action = ACTION_PERFORM.AREA_SELECTION;
     private boolean firstNodeChoosen = true;
     private HashMap<Long, Circle> nodesCircles;
-    private Group mapShapesGroup = new Group();
+    private Group mapLinesGroup = new Group(), mapCitiesGroup = new Group();
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
     private Background background;
-    private boolean backgroundDisplayed = false;
+    private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false;
     private Stage stageBoundsChooser = null;
 
     // mouse control operators
@@ -261,7 +261,7 @@ public class MainController implements Initializable {
             new Thread(() -> {
                 try {
                     g = parser.toGraph("./input/ways.osm");
-                    //parser.addCities(g, "./input/cities.osm");
+                    parser.addCities(g, "./input/cities.osm");
                 } catch (IOException | SAXException | ParserConfigurationException e) {
                     log(e.toString(), Log.LogLevels.ERROR);
                 }
@@ -318,14 +318,12 @@ public class MainController implements Initializable {
     public void drawGraph() {
 
         // reset the map
-        mapShapesGroup.getChildren().clear();
+        mapLinesGroup.getChildren().clear(); mapCitiesGroup.getChildren().clear();
         mapPane.getChildren().clear();
         resetBackground();
-        mapShapesGroup.setVisible(true);
+        mapLinesGroup.setVisible(true); mapCitiesGroup.setVisible(true);
         mapPane.setLayoutX(0);
         mapPane.setLayoutY(0);
-
-        HashMap<Long, Node> cities = g.getCities();
 
         double[] bounds = g.getBounds();
         // upper left corner coordinates
@@ -355,6 +353,7 @@ public class MainController implements Initializable {
         double factorX = mapPane.getPrefWidth();
         double factorY = mapPane.getPrefHeight();
 
+        // to get the best resolution (1280px) from map box api
         if (defaultWidth > defaultHeight) {
             defaultWidth = 1280;
             defaultHeight = ratioHoverW * 1280;
@@ -398,12 +397,49 @@ public class MainController implements Initializable {
                         Line line = new Line(startX, startY, endX, endY);
                         line.setStroke(Config.roadTypeColor.get(roadType));
                         line.setStrokeWidth(Config.roadTypeStrokeWidth.get(roadType));
-                        mapShapesGroup.getChildren().add(line);
+                        mapLinesGroup.getChildren().add(line);
                     }
                 }
             }
         }
-        mapPane.getChildren().add(mapShapesGroup);
+        mapPane.getChildren().add(mapLinesGroup);
+
+        // add cities
+        HashMap<Long, Node> cities = g.getCities();
+        int maxPop = g.getMaxPopulation();
+        double maxRadius = Math.sqrt(300);
+
+        int[] c1 = {255, 255, 0}; // yellow
+        int[] c2 = {255, 0, 0}; // red
+
+        for(Node n : cities.values()) {
+
+            double radius = Math.sqrt(300 * n.getPopulation() / (double) maxPop);
+            double scale =  (1 - (radius / maxRadius));
+
+            // color gradient between yellow and red
+            Color c = Color.rgb(255, (int)((c1[1] - c2[1]) * scale),0);
+            Circle circle = new Circle(radius, c);
+            nodeShape = Maths.mapProjection(n.getLat(), n.getLon());
+
+            circle.setLayoutX((nodeShape[0] - shape1[0]) * mapPane.getPrefWidth() / mapShape[0]);
+            circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * mapPane.getPrefHeight() / mapShape[1]);
+            mapCitiesGroup.getChildren().add(circle);
+        }
+        mapPane.getChildren().add(mapCitiesGroup);
+        mapCitiesGroup.setVisible(false);
+    }
+
+    public void showCities() {
+        if (mapPane.getPrefWidth() != 0) {
+            if (!citiesDisplayed) {
+                citiesDisplayed = true;
+                mapCitiesGroup.setVisible(false);
+            } else {
+                citiesDisplayed = false;
+                mapCitiesGroup.setVisible(true);
+            }
+        }
     }
 
     public void showBackground() {
@@ -411,11 +447,11 @@ public class MainController implements Initializable {
             if (!backgroundDisplayed) {
                 backgroundDisplayed = true;
                 mapPane.setBackground(background);
-                mapShapesGroup.setVisible(false);
+                mapLinesGroup.setVisible(false);
             } else {
                 backgroundDisplayed = false;
                 resetBackground();
-                mapShapesGroup.setVisible(true);
+                mapLinesGroup.setVisible(true);
             }
         }
     }
@@ -436,5 +472,9 @@ public class MainController implements Initializable {
 
         logsListView.getItems().add(logsListView.getItems().size(), newText);
         logsListView.scrollTo(logsListView.getItems().size() - 1);
+    }
+
+    public Graph getGraph() {
+        return g;
     }
 }
