@@ -1,8 +1,8 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.drawing.Box;
-import heig.osmparser.utils.maths.Maths;
-import heig.osmparser.utils.parsers.SVGParser;
+import heig.osmparser.maths.Maths;
+import heig.osmparser.parsers.SVGParser;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;

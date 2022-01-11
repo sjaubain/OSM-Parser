@@ -1,9 +1,9 @@
-package heig.osmparser.utils.converters;
+package heig.osmparser.converters;
 
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.model.Way;
-import heig.osmparser.utils.maths.Maths;
+import heig.osmparser.maths.Maths;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

@@ -1,4 +1,4 @@
-package heig.osmparser.utils.maths;
+package heig.osmparser.maths;
 
 import heig.osmparser.model.Node;
 

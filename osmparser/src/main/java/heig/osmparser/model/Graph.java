@@ -1,6 +1,6 @@
 package heig.osmparser.model;
 
-import heig.osmparser.utils.maths.Maths;
+import heig.osmparser.maths.Maths;
 import javafx.util.Pair;
 
 import java.util.*;

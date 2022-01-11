@@ -1,7 +1,7 @@
-package heig.osmparser;
+package heig.osmparser.shell;
 
 import heig.osmparser.controllers.MainController;
-import heig.osmparser.utils.logs.Log;
+import heig.osmparser.logs.Log;
 import javafx.application.Platform;
 
 import java.io.BufferedReader;

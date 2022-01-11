@@ -1,4 +1,4 @@
-package heig.osmparser.utils.converters;
+package heig.osmparser.converters;
 
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;

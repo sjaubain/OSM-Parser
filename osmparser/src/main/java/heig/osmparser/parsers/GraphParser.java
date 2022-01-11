@@ -1,10 +1,10 @@
-package heig.osmparser.utils.parsers;
+package heig.osmparser.parsers;
 
 import heig.osmparser.controllers.MainController;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Way;
-import heig.osmparser.utils.logs.Log;
-import heig.osmparser.utils.maths.Maths;
+import heig.osmparser.logs.Log;
+import heig.osmparser.maths.Maths;
 import javafx.application.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

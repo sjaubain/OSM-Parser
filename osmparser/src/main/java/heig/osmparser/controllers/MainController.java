@@ -1,15 +1,15 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.Main;
-import heig.osmparser.Shell;
+import heig.osmparser.shell.Shell;
 import heig.osmparser.configs.Config;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
 import heig.osmparser.model.Way;
-import heig.osmparser.utils.converters.CSVConverter;
-import heig.osmparser.utils.logs.Log;
-import heig.osmparser.utils.maths.Maths;
-import heig.osmparser.utils.parsers.GraphParser;
+import heig.osmparser.converters.CSVConverter;
+import heig.osmparser.logs.Log;
+import heig.osmparser.maths.Maths;
+import heig.osmparser.parsers.GraphParser;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
