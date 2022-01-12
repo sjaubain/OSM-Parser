@@ -51,8 +51,9 @@ public class GraphParser {
                 long n = Long.parseLong(element.getAttribute("id"));
                 double lat = Double.parseDouble(element.getAttribute("lat"));
                 double lon = Double.parseDouble(element.getAttribute("lon"));
-                int pop = 0;
+                int pop = 0; String cityName = "-";
 
+                // look for "population" and "name" attributes
                 NodeList children = element.getElementsByTagName("tag");
                 for (int j = 0; j < children.getLength(); ++j) {
                     Node child = children.item(j);
@@ -66,8 +67,11 @@ public class GraphParser {
                             }
                         }
                     }
+
+                    if (element1.getAttribute("k").equals("name"))
+                        cityName = element1.getAttribute("v");
                 }
-                g.addCity(new heig.osmparser.model.Node(n, lat, lon, pop));
+                g.addCity(new heig.osmparser.model.Node(n, lat, lon, pop, cityName));
             }
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

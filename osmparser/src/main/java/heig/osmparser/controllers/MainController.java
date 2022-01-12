@@ -57,7 +57,7 @@ public class MainController implements Initializable {
     @FXML
     private VBox importChoices;
     @FXML
-    private MenuItem mnitmExportCSV, mnitmEdit, mnitmHelp;
+    private MenuItem mnitmExportRawCSV, mnitmExportSPCSV, mnitmEdit, mnitmHelp;
 
     private final double SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -79,7 +79,7 @@ public class MainController implements Initializable {
     // mouse control operators
     private AnimatedZoomOperator zoomOperator;
     private AnimatedDragOperator dragOperator;
-    private AnimatedBoxOperator boxOperator;
+    private AnimatedBoxOperator boxOperator = null;
 
     // todo : store in another place
     private final static String API_KEY =
@@ -131,9 +131,17 @@ public class MainController implements Initializable {
             }
         });
 
-        mnitmExportCSV.setOnAction(event -> {
+        mnitmExportRawCSV.setOnAction(event -> {
             log("exporting CSV files to output/ directory", Log.LogLevels.INFO);
-            CSVConverter.graphToCSV(g);
+            CSVConverter.rawGraphToCSV(g);
+        });
+        mnitmExportSPCSV.setOnAction(event -> {
+            new Thread(() -> {
+                Platform.runLater(() -> {
+                    log("computing shortest paths between cities and exporting CSV files to output/ directory, please wait...", Log.LogLevels.INFO);
+                });
+                CSVConverter.flattenGraphToCSV(g);
+            }).start();
         });
 
         // Create operators for zoom and drag on map
