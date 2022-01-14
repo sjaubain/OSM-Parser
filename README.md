@@ -33,7 +33,11 @@ Since JavaFX components don't come with Java development kit after version 8, it
 
 * **Windows and Mac**
 
-As mentioned above, you can install the JDK 8 if you don't still have it. You may have to set the environment variable. Please refer for example to [this site](https://www.java.com/en/download/help/windows_manual_download.html) for more details. Once installed, type `java -version` to check that everything is correct. You should be able to launch the application by simply click on the .jar file.
+As mentioned above, you can install the JDK 8 if you don't still have it. You may have to set the environment variable. Please refer for example to [this site](https://www.java.com/en/download/help/windows_manual_download.html) for more details. Once installed, type `java -version` to check that everything is correct. You should be able to launch the application by simply click on the .jar file or with the command line :
+
+```bash
+java -jar osmparser-1.0-SNAPSHOT-launcher.jar
+```
 
 * **Ubuntu**
 
@@ -57,3 +61,17 @@ and same for javac, the java compiler. Try to rerun the script and this should b
 
 Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). If you want a complete networks, choose all options. (**Warning : if your request involves too many nodes, i.e. too large map with too much roads, you will get a java heap out of space memory exception and the program will crash**). You can also pick the bounds you want with left mouse button on the window you can open by clicking on the "choose bounds" button. Make sure that you pick the bounds on the region that corresponds to your .pbf file.
 Then click on *import* and wait for osmosis to do its job; (You will see two times `INFOS: Pipeline executing, waiting for completion.` and will have to wait two times until you see `INFOS: Total execution time: .... milliseconds.`). After you have loaded the graph, you can zoom and drag with right mouse button on the map. Click on "show background" if you want to have a more precise idea about where you are. To compute shortest paths, you just have to click twice on the map to choose source and destination nodes.
+
+* **export files**
+
+You can export the graph in CSV format with File -> Export
+
+* raw graph data
+
+All nodes composing ways and all edges will be exported, which can result in a large CSV file
+
+* compressed graph
+
+Only cities nodes and edges between them (computed shortest paths) will be exported. Here is an output exmple :
+
+<img src="screenshot2.png" style="display: block; margin: 0 auto" />
