@@ -442,10 +442,10 @@ public class MainController implements Initializable {
         if (mapPane.getPrefWidth() != 0) {
             if (!citiesDisplayed) {
                 citiesDisplayed = true;
-                mapCitiesGroup.setVisible(false);
+                mapCitiesGroup.setVisible(true);
             } else {
                 citiesDisplayed = false;
-                mapCitiesGroup.setVisible(true);
+                mapCitiesGroup.setVisible(false);
             }
         }
     }
