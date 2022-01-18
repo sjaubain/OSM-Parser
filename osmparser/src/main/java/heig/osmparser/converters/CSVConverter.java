@@ -55,7 +55,6 @@ public abstract class CSVConverter {
             nodesWriter.write("node_id,place_name,lat,lon\n");
             edgesWriter.write("from_node_id,to_node_id,time_cost\n");
             List<Long> citiesIds = new ArrayList<>(g.getCities().keySet());
-            List<Node> citiesNodes = new ArrayList<>(g.getCities().values());
             for(int i = 0; i < citiesIds.size(); ++i) {
                 Node city1 = g.getCities().get(citiesIds.get(i));
                 Node n1 = g.getClosestNodeFromGPSCoords(city1.getLat(), city1.getLon());

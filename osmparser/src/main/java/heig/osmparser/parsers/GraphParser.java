@@ -79,18 +79,6 @@ public class GraphParser {
         }
     }
 
-    private String getRoadType(Node way) {
-        Element element = (Element) way;
-        NodeList children = element.getElementsByTagName("tag");
-        for (int i = 0; i < children.getLength(); ++i) {
-            Node node = children.item(i);
-            if (((Element) node).getAttribute("k").equals("highway")) {
-                return ((Element) node).getAttribute("v");
-            }
-        }
-        return null;
-    }
-
     public Graph toGraph(String filename) throws IOException, SAXException, ParserConfigurationException {
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -139,7 +127,8 @@ public class GraphParser {
                 NodeList nodesInWay = way.getElementsByTagName("nd");
 
                 double maxSpeed = getMaxSpeed(way);
-                String roadType = getRoadType(node);
+                String roadType = getRoadType(way);
+                boolean bothSides = bothSideTraversable(way);
 
                 // first node of the road
                 long n1 = Long.parseLong(((Element) nodesInWay.item(0))
@@ -162,7 +151,7 @@ public class GraphParser {
                     }
                 }
                 g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
-                g.addEdge(n2, n1, cost, roadType == null ? "" : roadType);
+                g.addEdge(n2, n1, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
             }
 
             sendMessageToController("parsing nodes", Log.LogLevels.INFO);
@@ -194,14 +183,14 @@ public class GraphParser {
                 NodeList nodesInWay = way.getElementsByTagName("nd");
 
                 double maxSpeed = getMaxSpeed(way);
-                String roadType = getRoadType(node);
+                String roadType = getRoadType(way);
+                boolean bothSides = bothSideTraversable(way);
 
                 long firstNode = Long.parseLong(((Element) nodesInWay.item(0)).getAttribute("ref"));
                 long startNode = firstNode, curNode = firstNode;
                 long lastNode = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1)).getAttribute("ref"));
                 boolean foundIntermediateNodes = false;
 
-                //TODO : allow cost depending on tag "one_pass"
                 double cost = 0;
                 for (int k = 1; k < nodesInWay.getLength(); ++k) {
                     Node child = nodesInWay.item(k);
@@ -216,7 +205,7 @@ public class GraphParser {
                     if (g.getAdjList().containsKey(curNode)) {
                         if(curNode != lastNode) foundIntermediateNodes = true;
                         g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
-                        g.addEdge(curNode, startNode, cost, roadType == null ? "" : roadType);
+                        g.addEdge(curNode, startNode, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
                         startNode = curNode; cost = 0.0;
                     }
                 }
@@ -271,6 +260,17 @@ public class GraphParser {
         }
     }
 
+    private String getRoadType(Element way) {
+        NodeList tags = way.getElementsByTagName("tag");
+        for (int i = 0; i < tags.getLength(); ++i) {
+            Node node = tags.item(i);
+            if (((Element) node).getAttribute("k").equals("highway")) {
+                return ((Element) node).getAttribute("v");
+            }
+        }
+        return null;
+    }
+
     private double getMaxSpeed(Element way) {
         double maxSpeed = 13.8; // default speed
         NodeList tags = way.getElementsByTagName("tag");
@@ -287,6 +287,21 @@ public class GraphParser {
         }
         return maxSpeed;
     }
+
+    private boolean bothSideTraversable(Element way) {
+        NodeList tags = way.getElementsByTagName("tag");
+        for (int k = 1; k < tags.getLength(); ++k) {
+            Node child = tags.item(k);
+            Element element2 = (Element) child;
+            String key = element2.getAttribute("k");
+            if(key.equals("oneway")) {
+                String onewayStr = element2.getAttribute("v");
+                return onewayStr.equals("no");
+            }
+        }
+        return true;
+    }
+
     private double getCost(HashMap<Long, heig.osmparser.model.Node> usedNodes,
                            double maxSpeed, double cost, long cur, long next) {
         double lat1 = usedNodes.get(cur).getLat();
