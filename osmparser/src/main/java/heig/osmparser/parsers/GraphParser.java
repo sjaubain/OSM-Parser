@@ -22,6 +22,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * When we extract the ways using --un flag with osmosis from a .pbf or .osm file,
+ * we may get ways with start or end node that has not been retrieved with --un
+ * (i.e. nodes that overflow the bounding box). In this case, we cannot know the GPS
+ * coordinates of such a node. To avoid this problem, we just get rid of the unknown
+ * nodes.
+ *
+ *  1) we first store all used nodes (composing the way).
+ *  2) then we construct the adjacency list while parsing the ways. If we found
+ *     unknown nodes either starting or ending node, the cost will be 0 and the
+ *     edge will still be registered. In order to add the nodes and their coordinates
+ *     to the graph during the next step, we keep track of them looking at their ids
+ *     and storing them in a temporary data structure 'registeredNodes'.
+ *  3) Parsing used nodes : if a node has been registered during ways parsing, we
+ *     add it to the graph.
+ *  4) Resolving missing ways : find node k between i -> j and connect i to k, k to j
+ *     and remove i -> j (k must be a registered node, i.e. either start or end
+ *  5) Important step. We then remove from adjacency list the edges that contain
+ *     nodes that have not been retrieved (step 1).
+ */
 public class GraphParser extends MainControllerHandler {
 
     public final static Logger LOG = Logger.getLogger(GraphParser.class.getName());
@@ -218,8 +238,6 @@ public class GraphParser extends MainControllerHandler {
 
             sendMessageToController("resolving missing nodes", Log.LogLevels.INFO);
 
-            // remove from adjList all node ids that have not been found in the file
-            // because we must know the coordinates of such nodes.
             HashMap<Long, List<Way>> curAdjList = g.getAdjList();
             HashMap<Long, List<Way>> newAdjList = new HashMap<>();
 
