@@ -1,27 +1,25 @@
 package heig.osmparser.controllers;
 
 import heig.osmparser.Main;
-import heig.osmparser.shell.Shell;
 import heig.osmparser.configs.Config;
-import heig.osmparser.model.Graph;
-import heig.osmparser.model.Node;
-import heig.osmparser.model.Way;
 import heig.osmparser.converters.CSVConverter;
 import heig.osmparser.logs.Log;
 import heig.osmparser.maths.Maths;
+import heig.osmparser.model.Graph;
+import heig.osmparser.model.Node;
+import heig.osmparser.model.Way;
 import heig.osmparser.parsers.GraphParser;
+import heig.osmparser.shell.Shell;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -432,6 +430,23 @@ public class MainController implements Initializable {
 
             circle.setLayoutX((nodeShape[0] - shape1[0]) * mapPane.getPrefWidth() / mapShape[0]);
             circle.setLayoutY(-1 * (nodeShape[1] - shape1[1]) * mapPane.getPrefHeight() / mapShape[1]);
+
+            // customize hover property to show the place information
+            circle.getStyleClass().add("city-circle");
+            Tooltip cityInfos = new Tooltip(n.toString());
+            Tooltip.install(circle, cityInfos);
+            // "hack" to display tooltip directly
+            circle.setOnMouseEntered(e -> {
+                // repositioning
+                Point2D p = circle.localToScreen(e.getX(), e.getY());
+                // add offsets to x and y to avoid infinitely triggering mouse entered cause of tooltip shadowing cursor
+                cityInfos.show(leftPane.getScene().getWindow(), p.getX() + 10, p.getY() + 10);
+            });
+
+            circle.setOnMouseExited(e -> {
+                cityInfos.hide();
+            });
+
             mapCitiesGroup.getChildren().add(circle);
         }
         mapPane.getChildren().add(mapCitiesGroup);

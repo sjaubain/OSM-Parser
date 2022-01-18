@@ -64,3 +64,8 @@
 .text-field:focused {
     -fx-text-box-border: transparent;
 }
+
+.city-circle:hover {
+    -fx-scale-x: 1.6;
+    -fx-scale-y: 1.6;
+}

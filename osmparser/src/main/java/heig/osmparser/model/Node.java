@@ -34,11 +34,11 @@ public class Node {
         return population;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
     public String toString() {
-        return "Node [" + id + "] : lat " + lat + ", lon : " + lon;
+        return "Node [" + id + "] : lat " + lat + ", lon : " + lon
+                + (name.equals("-") ? "" : "\nname : " + name)
+                + (population == -1 ? "" : "\npopulation : " + population);
     }
 }
