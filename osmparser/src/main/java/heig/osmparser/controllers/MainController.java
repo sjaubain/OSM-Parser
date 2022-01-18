@@ -133,14 +133,14 @@ public class MainController implements Initializable {
 
         mnitmExportRawCSV.setOnAction(event -> {
             log("exporting CSV files to output/ directory", Log.LogLevels.INFO);
-            CSVConverter.rawGraphToCSV(g);
+            new CSVConverter(this).rawGraphToCSV(g);
         });
         mnitmExportSPCSV.setOnAction(event -> {
             new Thread(() -> {
                 Platform.runLater(() -> {
                     log("computing shortest paths between cities and exporting CSV files to output/ directory, please wait...", Log.LogLevels.INFO);
                 });
-                CSVConverter.flattenGraphToCSV(g);
+                new CSVConverter(this).flattenGraphToCSV(g);
             }).start();
         });
 

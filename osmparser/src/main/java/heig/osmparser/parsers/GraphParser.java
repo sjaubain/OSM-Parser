@@ -1,11 +1,11 @@
 package heig.osmparser.parsers;
 
 import heig.osmparser.controllers.MainController;
-import heig.osmparser.model.Graph;
-import heig.osmparser.model.Way;
+import heig.osmparser.controllers.MainControllerHandler;
 import heig.osmparser.logs.Log;
 import heig.osmparser.maths.Maths;
-import javafx.application.Platform;
+import heig.osmparser.model.Graph;
+import heig.osmparser.model.Way;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,18 +22,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class GraphParser {
+public class GraphParser extends MainControllerHandler {
 
     public final static Logger LOG = Logger.getLogger(GraphParser.class.getName());
 
     private MainController controller;
 
     public GraphParser(MainController controller) {
-        this.controller = controller;
+        super(controller);
     }
 
     public GraphParser() {
-        this.controller = null;
+        super();
     }
 
     public void addCities(Graph g, String filename) throws ParserConfigurationException, IOException, SAXException {
@@ -249,14 +249,6 @@ public class GraphParser {
             return g;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw e;
-        }
-    }
-
-    private void sendMessageToController(String msg, Log.LogLevels level) {
-        if(this.controller != null) {
-            Platform.runLater(() -> {
-                controller.log(msg, level);
-            });
         }
     }
 

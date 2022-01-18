@@ -10,11 +10,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 //TODO : see if this part is really necessary
-public abstract class EPSConverter {
+public class EPSConverter {
 
     public static final String DEFAULT_OUTPUT_FILENAME = "./output/cities.ps";
 
-    public static void graphToEPS(Graph g, String outputFilename) {
+    public void graphToEPS(Graph g, String outputFilename) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename));
             writer.write("%!PS-Adobe-2.0 EPSF-2.0\n" +

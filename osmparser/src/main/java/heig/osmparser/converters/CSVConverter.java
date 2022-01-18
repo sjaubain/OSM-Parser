@@ -1,5 +1,8 @@
 package heig.osmparser.converters;
 
+import heig.osmparser.controllers.MainController;
+import heig.osmparser.controllers.MainControllerHandler;
+import heig.osmparser.logs.Log;
 import heig.osmparser.maths.Maths;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
@@ -11,17 +14,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CSVConverter {
+public class CSVConverter extends MainControllerHandler {
 
     public static final String DEFAULT_OUTPUT_FILENAME_NODES = "./output/nodes.csv";
     public static final String DEFAULT_OUTPUT_FILENAME_EDGES = "./output/edges.csv";
+
+    public CSVConverter() {
+        super();
+    }
+
+    public CSVConverter(MainController controller) {
+        super(controller);
+    }
 
     /**
      * export the full graph as a file containing all
      * nodes ids and another file containing the adjList
      * @param g
      */
-    public static void rawGraphToCSV(Graph g) {
+    public void rawGraphToCSV(Graph g) {
         try {
             BufferedWriter nodesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_NODES));
             BufferedWriter edgesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_EDGES));
@@ -36,9 +47,11 @@ public abstract class CSVConverter {
                     edgesWriter.write(n1.getId() + "," + n2Id + "\n");
                 }
             }
+            sendMessageToController("export done", Log.LogLevels.INFO);
             nodesWriter.close(); edgesWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
+            sendMessageToController(e.getStackTrace().toString(), Log.LogLevels.ERROR);
         }
     }
 
@@ -47,7 +60,7 @@ public abstract class CSVConverter {
      * export the graph considering only the cities as nodes
      * @param g
      */
-    public static void flattenGraphToCSV(Graph g) {
+    public void flattenGraphToCSV(Graph g) {
         try {
             BufferedWriter nodesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_NODES));
             BufferedWriter edgesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_EDGES));
@@ -67,9 +80,11 @@ public abstract class CSVConverter {
                     edgesWriter.write(city1.getId() + "," + city2.getId() + "," + Maths.round(c_ij, 4) + "\n");
                 }
             }
+            sendMessageToController("export done", Log.LogLevels.INFO);
             nodesWriter.close(); edgesWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
+            sendMessageToController(e.getStackTrace().toString(), Log.LogLevels.ERROR);
         }
     }
 }
