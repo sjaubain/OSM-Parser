@@ -34,7 +34,7 @@
                         </ListView>
                         <Pane fx:id="logsPane" layoutY="468.0" prefHeight="175.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="495.0">
                             <children>
-                                <ToolBar layoutX="-7.0" maxHeight="35.0" minHeight="28.0" prefHeight="35.0" prefWidth="905.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="173.0">
+                                <ToolBar fx:id="logsToolBar" layoutX="-7.0" maxHeight="35.0" minHeight="28.0" prefHeight="35.0" prefWidth="910.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="173.0">
                                     <items>
                                         <Button fx:id="btnReduceLogs" maxHeight="15.0" maxWidth="15.0" minHeight="15.0" minWidth="15.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="15.0" text="" translateX="10.0" />
                                         <Label text="logs" translateX="12.0" />
@@ -55,7 +55,7 @@
                         <Pane fx:id="mapPane" />
                     </children>
                 </AnchorPane>
-                <AnchorPane minWidth="200.0">
+                <AnchorPane maxWidth="200.0" minWidth="200.0" prefWidth="200.0">
                     <children>
                         <TextField fx:id="minlon" layoutX="51.0" layoutY="10.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />
                         <TextField fx:id="maxlat" layoutX="51.0" layoutY="35.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="124.0" text="0.0" />

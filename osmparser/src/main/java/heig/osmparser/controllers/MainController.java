@@ -43,11 +43,13 @@ public class MainController implements Initializable {
     @FXML
     private AnchorPane leftPane;
     @FXML
-    private Pane logsPane;
-    @FXML
-    private Pane mapPane; // w : 890, h : 496
+    private Pane mapPane, logsPane;
     @FXML
     private ListView logsListView;
+    @FXML
+    private Button btnReduceLogs;
+    @FXML
+    private ToolBar logsToolBar;
     @FXML
     private TextField minlat, minlon, maxlat, maxlon;
     @FXML
@@ -71,7 +73,7 @@ public class MainController implements Initializable {
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
     private Background background;
-    private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false;
+    private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false; private boolean logsReduced = false;
     private Stage stageBoundsChooser = null;
 
     // mouse control operators
@@ -140,6 +142,20 @@ public class MainController implements Initializable {
                 });
                 new CSVConverter(this).flattenGraphToCSV(g);
             }).start();
+        });
+
+        btnReduceLogs.setOnAction(e -> {
+            double offY = logsPane.getPrefHeight() - logsToolBar.getMinHeight();
+            if(logsReduced) {
+                logsPane.setTranslateY(0); logsListView.setTranslateY(0);
+                logsReduced = false;
+                btnReduceLogs.setStyle("-fx-rotate: 0");
+            } else {
+                logsPane.setTranslateY(offY); logsListView.setTranslateY(offY);
+                logsReduced = true;
+                btnReduceLogs.setStyle("-fx-rotate: 180");
+            }
+
         });
 
         // Create operators for zoom and drag on map
