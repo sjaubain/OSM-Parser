@@ -123,7 +123,7 @@ public class MainController implements Initializable {
                         Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                         firstNodeChoosen = true;
                         drawPath(g.getShortestPath(to));
-                        log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
+                        log("time cost : " + Config.SPEED_SMOOTH_FACTOR * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
                     }
                 } else if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                     // ...
@@ -201,7 +201,7 @@ public class MainController implements Initializable {
                     " completeWays=yes"; // allow to fetch all nodes composing ways that overflow bounding box
                                          // by default, set to "no". If "yes", take about ~5 more time to import
                                          // but prevents missing ways and problems while computing shortest paths
-                                         // (just remove this line if not necessary)
+                                         // (just remove this line if not necessary) //TODO : add this as an option
             String commandWays = "osmosis --read-pbf-fast " + pbfFile
                     // assuming user has not given bounds yet
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
@@ -421,8 +421,8 @@ public class MainController implements Initializable {
                         double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
-                        line.setStroke(Config.roadTypeColor.get(roadType));
-                        line.setStrokeWidth(Config.roadTypeStrokeWidth.get(roadType));
+                        line.setStroke(Config.ROAD_TYPE_COLOR.get(roadType));
+                        line.setStrokeWidth(Config.ROAD_TYPE_STROKE_WIDTH.get(roadType));
                         mapLinesGroup.getChildren().add(line);
                     }
                 }

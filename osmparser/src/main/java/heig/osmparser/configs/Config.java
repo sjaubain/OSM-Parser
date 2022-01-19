@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 import java.util.HashMap;
 
 public abstract class Config {
-    public static HashMap<String, Double> roadTypeStrokeWidth = new HashMap<String, Double>() {{
+    public static HashMap<String, Double> ROAD_TYPE_STROKE_WIDTH = new HashMap<String, Double>() {{
         put("", 0.4);
         put("motorway", 0.6);
         put("motorway_link", 0.6);
@@ -21,7 +21,7 @@ public abstract class Config {
         put("residential", 0.08);
     }};
 
-    public static HashMap<String, Color> roadTypeColor = new HashMap<String, Color>() {{
+    public static HashMap<String, Color> ROAD_TYPE_COLOR = new HashMap<String, Color>() {{
         put("", Color.RED);
         put("motorway", Color.ORANGE);
         put("motorway_link", Color.ORANGE);
@@ -36,4 +36,7 @@ public abstract class Config {
         put("tertiary_link", Color.LIGHTYELLOW);
         put("residential", Color.LIGHTCYAN);
     }};
+
+    // because algorithm take into account the max speed limit, which is not the real speed
+    public static double SPEED_SMOOTH_FACTOR = 1 / 0.7;
 }
