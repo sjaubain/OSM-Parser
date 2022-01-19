@@ -27,7 +27,8 @@ import java.util.logging.Logger;
  * we may get ways with start or end node that has not been retrieved with --un
  * (i.e. nodes that overflow the bounding box). In this case, we cannot know the GPS
  * coordinates of such a node. To avoid this problem, we just get rid of the unknown
- * nodes.
+ * nodes. All these steps could be avoid because we use "completeWays=yes" as
+ * --bounding-box option when filtering. Anyway, it is more safe to let the code so
  *
  *  1) we first store all used nodes (composing the way).
  *  2) then we construct the adjacency list while parsing the ways. If we found
@@ -101,6 +102,7 @@ public class GraphParser extends MainControllerHandler {
 
     public Graph toGraph(String filename) throws IOException, SAXException, ParserConfigurationException {
 
+        // todo : try to factorize code by combining steps 2 and 5
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
             Graph g = new Graph();

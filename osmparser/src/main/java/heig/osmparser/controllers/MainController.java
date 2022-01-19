@@ -202,10 +202,10 @@ public class MainController implements Initializable {
                                          // by default, set to "no". If "yes", take about ~5 more time to import
                                          // but prevents missing ways and problems while computing shortest paths
                                          // (just remove this line if not necessary)
-            String commandWays = "osmosis --read-pbf " + pbfFile
+            String commandWays = "osmosis --read-pbf-fast " + pbfFile
                     // assuming user has not given bounds yet
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
-            String commandCities = "osmosis --read-pbf " + pbfFile
+            String commandCities = "osmosis --read-pbf-fast " + pbfFile
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
             int nbPlace = 0, nbRoad = 0;
             String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
