@@ -1,6 +1,8 @@
 # OSM Parser - Graph builder
 
-<img src="screenshot.png" style="display: block; margin: 0 auto" />
+<p align="center">
+  <img src="images/screenshot.png" style="display: block; margin: 0 auto" />
+</p>
 
 ## Overview
 
@@ -74,4 +76,14 @@ All nodes composing ways and all edges will be exported, which can result in a l
 
 Only cities nodes and edges between them (computed shortest paths) will be exported. Here is an output exmple :
 
-<img src="screenshot2.png" style="display: block; margin: 0 auto" />
+<p align="center">
+  <img src="images/screenshot2.png" style="display: block; margin: 0 auto" />
+</p>
+
+To test the precision of those results, we use the matrix distance API of the free service [openrouteservice](https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post) for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parer CSV export tool.
+
+<p align="center">
+  <img src="images/screenshot3.png" style="display: block; margin: 0 auto" />
+</p>
+
+We can clearly see a correlation. However, for a given time with OSM-Parser, the corresponding time found by openrouteservice is a little bit greater. This is maybe because we don't take the road traffic in real time into account.

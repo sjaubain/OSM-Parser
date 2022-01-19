@@ -63,7 +63,6 @@ public class CSVConverter extends MainControllerHandler {
      */
     public void flattenGraphToCSV(Graph g) {
         try {
-            String tmp = "[";
             BufferedWriter nodesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_NODES));
             BufferedWriter edgesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_EDGES));
 
@@ -73,7 +72,6 @@ public class CSVConverter extends MainControllerHandler {
             for(int i = 0; i < citiesIds.size(); ++i) {
                 Node city1 = g.getCities().get(citiesIds.get(i));
                 Node n1 = g.getClosestNodeFromGPSCoords(city1.getLat(), city1.getLon());
-                if(i < 50) tmp += "[" + city1.getLat() + "," + city1.getLon() + "],";
                 g.dijkstra(n1.getId());
                 nodesWriter.write(city1.getId() + "," + city1.getName() + "," + city1.getLat() + "," + city1.getLon() + "\n");
                 for (int j = 0; j < citiesIds.size(); ++j) {
