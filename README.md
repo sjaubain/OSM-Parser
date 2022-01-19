@@ -86,4 +86,4 @@ To test the precision of those results, we use the matrix distance API of the fr
   <img src="images/screenshot3.png" style="display: block; margin: 0 auto" />
 </p>
 
-We can clearly see a correlation. However, for a given time with OSM-Parser, the corresponding time found by openrouteservice is a little bit greater. This is maybe because we don't take the road traffic in real time into account.
+We can clearly see a correlation. However, for a given time with OSM-Parser, the corresponding time found by openrouteservice is a little bit lower. This is maybe because we don't take the road traffic in real time into account.
