@@ -197,7 +197,11 @@ public class MainController implements Initializable {
                     " top=" + maxlat.getText() +
                     " left=" + minlon.getText() +
                     " bottom=" + minlat.getText() +
-                    " right=" + maxlon.getText();
+                    " right=" + maxlon.getText() +
+                    " completeWays=yes"; // allow to fetch all nodes composing ways that overflow bounding box
+                                         // by default, set to "no". If "yes", take about ~5 more time to import
+                                         // but prevents missing ways and problems while computing shortest paths
+                                         // (just remove this line if not necessary)
             String commandWays = "osmosis --read-pbf " + pbfFile
                     // assuming user has not given bounds yet
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
