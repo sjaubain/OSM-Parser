@@ -72,7 +72,8 @@ public class GraphParser extends MainControllerHandler {
                 long n = Long.parseLong(element.getAttribute("id"));
                 double lat = Double.parseDouble(element.getAttribute("lat"));
                 double lon = Double.parseDouble(element.getAttribute("lon"));
-                int pop = 0; String cityName = "-";
+                int pop = 0;
+                String cityName = "-";
 
                 // look for "population" and "name" attributes
                 NodeList children = element.getElementsByTagName("tag");

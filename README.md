@@ -80,8 +80,20 @@ Only cities nodes and edges between them (computed shortest paths) will be expor
   <img src="images/screenshot2.png" style="display: block; margin: 0 auto" />
 </p>
 
-To test the precision of those results, we use the matrix distance API of the free service [openrouteservice](https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post) for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parer CSV export tool.
+To test the precision of those results, we use the matrix distance API of the free service [openrouteservice](https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post) for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parer CSV export tool. Since there are 50 cities, we obtain 50 x 50 time routes, one for each pair of cities.
 
 <p align="center">
   <img src="images/screenshot3.png" style="display: block; margin: 0 auto" />
+</p>
+
+We can see a correlation. However, the slope of the line that fit the dots is not exactly 1. In fact, we just have to adjust the parameter `SPEED_SMOOTH_FACTOR` in the config file if needed. Below another example with the 50 most important towns of Switzerland.
+
+<p align="center">
+  <img src="images/screenshot4.png" style="display: block; margin: 0 auto" />
+</p>
+
+Here again, the resuls are quite good, except a group of points far from the regression line. The most extreme point corresponds to the route that link *Visp* to *Spiez*. As you can see in the image below, the shortest path in blue is not the real shortest path. In fact, there is a tunnel between these two places, but it has not been parsed with osmosis in this example.
+
+<p align="center">
+  <img src="images/screenshot5.png" style="display: block; margin: 0 auto" />
 </p>

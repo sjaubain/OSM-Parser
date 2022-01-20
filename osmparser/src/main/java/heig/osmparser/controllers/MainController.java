@@ -34,9 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainController implements Initializable {
 
@@ -58,6 +56,8 @@ public class MainController implements Initializable {
     private VBox importChoices;
     @FXML
     private MenuItem mnitmExportRawCSV, mnitmExportSPCSV, mnitmEdit, mnitmHelp;
+    @FXML
+    private RadioButton completeWays;
 
     private final double SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -73,7 +73,8 @@ public class MainController implements Initializable {
     private final double zoomFactor = 1.6;
     private Group shortestPathLines;
     private Background background;
-    private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false; private boolean logsReduced = false;
+    private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false;
+    private boolean logsReduced = false; private boolean completeWaysSelected = false;
     private Stage stageBoundsChooser = null;
 
     // mouse control operators
@@ -109,6 +110,15 @@ public class MainController implements Initializable {
                 boxOperator.getBox().removeRectangleFromPane(); boxOperator = null;
             }
         });
+        completeWays.setOnAction(e -> {
+            if(completeWaysSelected)
+                completeWaysSelected = false;
+            else
+                completeWaysSelected = true;
+        });
+        installTooltip("allwos to get all nodes for the ways overflowing the bounding box.\n " +
+                "Warning : Takes about 5 more time to import data, but gives better precision for\n " +
+                "the shortest paths computation and CSV export", completeWays);
 
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             if (event.getButton().equals(MouseButton.PRIMARY)) {
@@ -163,6 +173,21 @@ public class MainController implements Initializable {
         dragOperator = new AnimatedDragOperator(mapPane);
     }
 
+    public void installTooltip(String infos, javafx.scene.Node node) {
+        Tooltip tooltip = new Tooltip(infos);
+        Tooltip.install(node, tooltip);
+        // "hack" to display tooltip directly
+        node.setOnMouseEntered(e -> {
+            // repositioning
+            Point2D p = node.localToScreen(e.getX(), e.getY());
+            // add offsets to x and y to avoid infinitely triggering mouse entered cause of tooltip shadowing cursor
+            tooltip.show(leftPane.getScene().getWindow(), p.getX() + 10, p.getY() + 10);
+        });
+        node.setOnMouseExited(e -> {
+            tooltip.hide();
+        });
+    }
+
     public void chooseBounds() {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("bounds.fxml"));
         Scene scene = null;
@@ -197,22 +222,24 @@ public class MainController implements Initializable {
                     " top=" + maxlat.getText() +
                     " left=" + minlon.getText() +
                     " bottom=" + minlat.getText() +
-                    " right=" + maxlon.getText() +
+                    " right=" + maxlon.getText();
+            if(completeWaysSelected)
+                boundingBox +=
                     " completeWays=yes"; // allow to fetch all nodes composing ways that overflow bounding box
                                          // by default, set to "no". If "yes", take about ~5 more time to import
                                          // but prevents missing ways and problems while computing shortest paths
-                                         // (just remove this line if not necessary) //TODO : add this as an option
-            String commandWays = "osmosis --read-pbf-fast " + pbfFile
+                                         // (just remove this line if not necessary)
+            String commandWays = "osmosis --read-pbf " + pbfFile
                     // assuming user has not given bounds yet
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
-            String commandCities = "osmosis --read-pbf-fast " + pbfFile
+            String commandCities = "osmosis --read-pbf " + pbfFile
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
             int nbPlace = 0, nbRoad = 0;
             String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
             ObservableList choices = importChoices.getChildren();
             for (Object choice : choices) {
                 RadioButton rb = ((RadioButton) choice);
-                if (rb.isSelected()) {
+                if (rb.isSelected() && !rb.equals(completeWays)) {
                     // we use 'I' as a delimiter in the fx id because special chars are not allowed
                     String choiceKey = rb.getId(), choiceValue = choiceKey.substring(choiceKey.indexOf("I") + 1);
                     switch (choiceKey.substring(0, choiceKey.indexOf("I"))) {
@@ -432,6 +459,7 @@ public class MainController implements Initializable {
 
         // add cities
         HashMap<Long, Node> cities = g.getCities();
+
         int maxPop = g.getMaxPopulation();
         double maxRadius = Math.sqrt(300);
 
@@ -453,19 +481,7 @@ public class MainController implements Initializable {
 
             // customize hover property to show the place information
             circle.getStyleClass().add("city-circle");
-            Tooltip cityInfos = new Tooltip(n.toString());
-            Tooltip.install(circle, cityInfos);
-            // "hack" to display tooltip directly
-            circle.setOnMouseEntered(e -> {
-                // repositioning
-                Point2D p = circle.localToScreen(e.getX(), e.getY());
-                // add offsets to x and y to avoid infinitely triggering mouse entered cause of tooltip shadowing cursor
-                cityInfos.show(leftPane.getScene().getWindow(), p.getX() + 10, p.getY() + 10);
-            });
-
-            circle.setOnMouseExited(e -> {
-                cityInfos.hide();
-            });
+            installTooltip(n.toString(), circle);
 
             mapCitiesGroup.getChildren().add(circle);
         }
