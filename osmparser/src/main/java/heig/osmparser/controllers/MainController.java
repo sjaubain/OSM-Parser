@@ -237,6 +237,7 @@ public class MainController implements Initializable {
             int nbPlace = 0, nbRoad = 0;
             String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
             ObservableList choices = importChoices.getChildren();
+
             for (Object choice : choices) {
                 RadioButton rb = ((RadioButton) choice);
                 if (rb.isSelected() && !rb.equals(completeWays)) {
@@ -256,6 +257,7 @@ public class MainController implements Initializable {
                     }
                 }
             }
+            System.out.println(commandWays);
 
             // if user didn't give args at all
             if (nbPlace == 0 && nbRoad == 0) {
@@ -266,7 +268,7 @@ public class MainController implements Initializable {
             commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
         } catch (Exception e) {
-            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)",
+            log("you seem not to have an input file with a .pbf file (put it on the input/ folder)",
                     Log.LogLevels.WARNING);
             return new String[]{"", ""};
         }

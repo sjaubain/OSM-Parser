@@ -50,7 +50,7 @@ sudo bash linux_setup.sh
 To run the application, type
 
 ```bash
-sudo bash linux_launcher
+sudo bash linux_launcher.sh
 ```
 If you get errors, try to check if you have a valid JDK installed on your machine with `java -version`. If two or more JDKs are installed you can choose which one you want to use with
 
@@ -80,7 +80,7 @@ Only cities nodes and edges between them (computed shortest paths) will be expor
   <img src="images/screenshot2.png" style="display: block; margin: 0 auto" />
 </p>
 
-To test the precision of those results, we use the matrix distance API of the free service [openrouteservice](https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post) for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parer CSV export tool. Since there are 50 cities, we obtain 50 x 50 time routes, one for each pair of cities.
+To test the precision of those results, we use the matrix distance API of the free service [openrouteservice](https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post) for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parser CSV export tool. Since there are 50 cities, we obtain 50 x 50 time routes, one for each pair of cities.
 
 <p align="center">
   <img src="images/screenshot3.png" style="display: block; margin: 0 auto" />
