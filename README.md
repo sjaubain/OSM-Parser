@@ -6,7 +6,7 @@
 
 ## Overview
 
-OSM Parser is a Java application that aims to allow the user to parse data from OpenStreetMap ([https://www.openstreetmap.org/]()), in particular the roads and cities and turn them into a graph, perform opertions on it such as computing shortest paths, and export it as a CSV file, PNG or EPS image. The GUI uses the JavaFX library and *osmosis* to filter data from large .pbf files, (You can find them [here](https://download.geofabrik.de/)). Osmosis is a command line tool that let you keep nodes or ways with specific tags, reject other with other tags, choose elements according to desired specifications, fetch elements from a database,..
+OSM Parser is a Java application that aims to allow the user to parse data from OpenStreetMap ([https://www.openstreetmap.org/]()), in particular the roads and cities and turn them into a graph, perform opertions on it such as computing shortest paths, and export it as a CSV file, PNG or EPS image. The GUI uses the JavaFX library and *osmosis* to filter data from large .pbf files, (You can find them [here](https://download.geofabrik.de/)). Osmosis is a command line tool that lets you keep nodes or ways with specific tags, reject specific ones with other tags, choose elements according to some desired specification, fetch elements from a database,..
 
 The documentation and source code for osmosis can be found here :
 * github [source code](https://github.com/openstreetmap/osmosis).
@@ -14,7 +14,7 @@ The documentation and source code for osmosis can be found here :
 
 ## Status
 
-Work still in progress. Please report all bugs.
+Work still in progress. Please report all bugs and suggestion.
 
 ## Installation
 
