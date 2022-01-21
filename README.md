@@ -57,7 +57,7 @@ If you get errors, try to check if you have a valid JDK installed on your machin
 ```bash
 sudo update-alternatives --config java
 ```
-and same for javac, the java compiler. Try to rerun the script and this should be ok.
+and same for javac, the java compiler. (The maven build tool uses the version 11 of java, so you should choose this one). Try to rerun the script and this should be ok.
 
 ## Usage
 
