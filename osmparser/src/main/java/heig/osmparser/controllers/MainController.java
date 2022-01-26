@@ -340,7 +340,6 @@ public class MainController implements Initializable {
 
     public void drawPath(List<Node> nodes) {
 
-        //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
         double[] shape1 = Maths.mapProjection(bounds[1], bounds[0]); // upper left corner
         double[] shape2 = Maths.mapProjection(bounds[3], bounds[2]); // bottom right corner
@@ -450,8 +449,8 @@ public class MainController implements Initializable {
                         double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
-                        line.setStroke(Config.ROAD_TYPE_COLOR.get(roadType));
-                        line.setStrokeWidth(Config.ROAD_TYPE_STROKE_WIDTH.get(roadType));
+                        line.setStroke(Config.getRoadTypeColor(roadType));
+                        line.setStrokeWidth(Config.getRoadTypeStrokeWidth(roadType));
                         mapLinesGroup.getChildren().add(line);
                     }
                 }

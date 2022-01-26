@@ -37,6 +37,18 @@ public abstract class Config {
         put("residential", Color.LIGHTCYAN);
     }};
 
+    public static Double getRoadTypeStrokeWidth(String roadType) {
+        Double sw = ROAD_TYPE_STROKE_WIDTH.get(roadType);
+        if(sw == null) return ROAD_TYPE_STROKE_WIDTH.get("");
+        return sw;
+    }
+
+    public static Color getRoadTypeColor(String roadType) {
+        Color c = ROAD_TYPE_COLOR.get(roadType);
+        if(c == null) return ROAD_TYPE_COLOR.get("");
+        return c;
+    }
+
     // because algorithm take into account the max speed limit, which is not the real speed
     public static double SPEED_SMOOTH_FACTOR = 1 / 0.7;
 }

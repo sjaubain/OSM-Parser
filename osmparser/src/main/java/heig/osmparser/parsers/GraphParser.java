@@ -147,34 +147,36 @@ public class GraphParser extends MainControllerHandler {
             for (int i = 0; i < nodes.getLength(); ++i) {
                 Node node = nodes.item(i);
                 Element way = (Element) node;
-                NodeList nodesInWay = way.getElementsByTagName("nd");
+                if(isHighWay(way)) {
+                    NodeList nodesInWay = way.getElementsByTagName("nd");
 
-                double maxSpeed = getMaxSpeed(way);
-                String roadType = getRoadType(way);
-                boolean bothSides = bothSideTraversable(way);
+                    double maxSpeed = getMaxSpeed(way);
+                    String roadType = getRoadType(way);
+                    boolean bothSides = bothSideTraversable(way);
 
-                // first node of the road
-                long n1 = Long.parseLong(((Element) nodesInWay.item(0))
-                        .getAttribute("ref"));
-                // last node of the road
-                long n2 = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1))
-                        .getAttribute("ref"));
-                registeredNodes.put(String.valueOf(n1), true);
-                registeredNodes.put(String.valueOf(n2), true);
-
-                double cost = 0;
-                for(int j = 0; j < nodesInWay.getLength() - 1; ++j) {
-                    long cur = Long.parseLong(((Element) nodesInWay.item(j))
+                    // first node of the road
+                    long n1 = Long.parseLong(((Element) nodesInWay.item(0))
                             .getAttribute("ref"));
-                    long next = Long.parseLong(((Element) nodesInWay.item(j + 1))
+                    // last node of the road
+                    long n2 = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1))
                             .getAttribute("ref"));
+                    registeredNodes.put(String.valueOf(n1), true);
+                    registeredNodes.put(String.valueOf(n2), true);
 
-                    if(usedNodes.get(cur) != null && usedNodes.get(next) != null) {
-                        cost = getCost(usedNodes, maxSpeed, cost, cur, next);
+                    double cost = 0;
+                    for (int j = 0; j < nodesInWay.getLength() - 1; ++j) {
+                        long cur = Long.parseLong(((Element) nodesInWay.item(j))
+                                .getAttribute("ref"));
+                        long next = Long.parseLong(((Element) nodesInWay.item(j + 1))
+                                .getAttribute("ref"));
+
+                        if (usedNodes.get(cur) != null && usedNodes.get(next) != null) {
+                            cost = getCost(usedNodes, maxSpeed, cost, cur, next);
+                        }
                     }
+                    g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
+                    g.addEdge(n2, n1, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
                 }
-                g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
-                g.addEdge(n2, n1, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
             }
 
             sendMessageToController("parsing nodes", Log.LogLevels.INFO);
@@ -203,39 +205,42 @@ public class GraphParser extends MainControllerHandler {
 
                 Node node = nodes.item(i);
                 Element way = (Element) node;
-                NodeList nodesInWay = way.getElementsByTagName("nd");
+                if(isHighWay(way)) {
+                    NodeList nodesInWay = way.getElementsByTagName("nd");
 
-                double maxSpeed = getMaxSpeed(way);
-                String roadType = getRoadType(way);
-                boolean bothSides = bothSideTraversable(way);
+                    double maxSpeed = getMaxSpeed(way);
+                    String roadType = getRoadType(way);
+                    boolean bothSides = bothSideTraversable(way);
 
-                long firstNode = Long.parseLong(((Element) nodesInWay.item(0)).getAttribute("ref"));
-                long startNode = firstNode, curNode = firstNode;
-                long lastNode = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1)).getAttribute("ref"));
-                boolean foundIntermediateNodes = false;
+                    long firstNode = Long.parseLong(((Element) nodesInWay.item(0)).getAttribute("ref"));
+                    long startNode = firstNode, curNode = firstNode;
+                    long lastNode = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1)).getAttribute("ref"));
+                    boolean foundIntermediateNodes = false;
 
-                double cost = 0;
-                for (int k = 1; k < nodesInWay.getLength(); ++k) {
-                    Node child = nodesInWay.item(k);
-                    Element kthNode = (Element) child;
-                    long nextNode = Long.parseLong(kthNode.getAttribute("ref"));
+                    double cost = 0;
+                    for (int k = 1; k < nodesInWay.getLength(); ++k) {
+                        Node child = nodesInWay.item(k);
+                        Element kthNode = (Element) child;
+                        long nextNode = Long.parseLong(kthNode.getAttribute("ref"));
 
-                    if(usedNodes.get(curNode) != null && usedNodes.get(nextNode) != null) {
-                        cost = getCost(usedNodes, maxSpeed, cost, curNode, nextNode);
-                        curNode = nextNode;
+                        if (usedNodes.get(curNode) != null && usedNodes.get(nextNode) != null) {
+                            cost = getCost(usedNodes, maxSpeed, cost, curNode, nextNode);
+                            curNode = nextNode;
+                        }
+
+                        if (g.getAdjList().containsKey(curNode)) {
+                            if (curNode != lastNode) foundIntermediateNodes = true;
+                            g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
+                            g.addEdge(curNode, startNode, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
+                            startNode = curNode;
+                            cost = 0.0;
+                        }
                     }
 
-                    if (g.getAdjList().containsKey(curNode)) {
-                        if(curNode != lastNode) foundIntermediateNodes = true;
-                        g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
-                        g.addEdge(curNode, startNode, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
-                        startNode = curNode; cost = 0.0;
+                    if (foundIntermediateNodes) {
+                        g.getAdjList().get(firstNode).removeIf(w -> w.getToId() == lastNode);
+                        g.getAdjList().get(lastNode).removeIf(w -> w.getToId() == firstNode);
                     }
-                }
-
-                if(foundIntermediateNodes) {
-                    g.getAdjList().get(firstNode).removeIf(w -> w.getToId() == lastNode);
-                    g.getAdjList().get(lastNode).removeIf(w -> w.getToId() == firstNode);
                 }
             }
 
@@ -273,6 +278,16 @@ public class GraphParser extends MainControllerHandler {
         }
     }
 
+    private boolean isHighWay(Element way) {
+        NodeList tags = way.getElementsByTagName("tag");
+        for (int i = 0; i < tags.getLength(); ++i) {
+            Node node = tags.item(i);
+            if (((Element) node).getAttribute("k").equals("highway"))
+                return true;
+        }
+        return false;
+    }
+
     private String getRoadType(Element way) {
         NodeList tags = way.getElementsByTagName("tag");
         for (int i = 0; i < tags.getLength(); ++i) {
@@ -281,7 +296,7 @@ public class GraphParser extends MainControllerHandler {
                 return ((Element) node).getAttribute("v");
             }
         }
-        return null;
+        return "";
     }
 
     private double getMaxSpeed(Element way) {
