@@ -1,7 +1,0 @@
-https://pyrosm.readthedocs.io/en/latest/basics.html#export-street-networks-to-graph
-https://pyrosm.readthedocs.io/en/latest/graphs.html
-Maperitive
-Mapnik
-https://docs.mapbox.com/api/styles/v1/simonjobin/
-https://docs.mapbox.com/api/maps/static-images/
-https://www.epfl.ch/campus/library/collections/maps-geodata/

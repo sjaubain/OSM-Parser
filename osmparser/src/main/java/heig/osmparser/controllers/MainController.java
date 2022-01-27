@@ -34,20 +34,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainController implements Initializable {
 
     @FXML
     private AnchorPane leftPane;
     @FXML
-    private Pane logsPane;
-    @FXML
-    private Pane mapPane; // w : 890, h : 496
+    private Pane mapPane, logsPane;
     @FXML
     private ListView logsListView;
+    @FXML
+    private Button btnReduceLogs;
+    @FXML
+    private ToolBar logsToolBar;
     @FXML
     private TextField minlat, minlon, maxlat, maxlon;
     @FXML
@@ -56,6 +56,8 @@ public class MainController implements Initializable {
     private VBox importChoices;
     @FXML
     private MenuItem mnitmExportRawCSV, mnitmExportSPCSV, mnitmEdit, mnitmHelp;
+    @FXML
+    private RadioButton completeWays;
 
     private final double SCREEN_WIDTH = 892, SCREEN_HEIGHT = 473;
     private Graph g;
@@ -72,6 +74,7 @@ public class MainController implements Initializable {
     private Group shortestPathLines;
     private Background background;
     private boolean backgroundDisplayed = false; private boolean citiesDisplayed = false;
+    private boolean logsReduced = false; private boolean completeWaysSelected = false;
     private Stage stageBoundsChooser = null;
 
     // mouse control operators
@@ -107,6 +110,15 @@ public class MainController implements Initializable {
                 boxOperator.getBox().removeRectangleFromPane(); boxOperator = null;
             }
         });
+        completeWays.setOnAction(e -> {
+            if(completeWaysSelected)
+                completeWaysSelected = false;
+            else
+                completeWaysSelected = true;
+        });
+        installTooltip("allwos to get all nodes for the ways overflowing the bounding box.\n " +
+                "Warning : Takes about 5 more time to import data, but gives better precision for\n " +
+                "the shortest paths computation and CSV export", completeWays);
 
         mapPane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             if (event.getButton().equals(MouseButton.PRIMARY)) {
@@ -121,7 +133,7 @@ public class MainController implements Initializable {
                         Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                         firstNodeChoosen = true;
                         drawPath(g.getShortestPath(to));
-                        log("time cost : " + 1 / 0.7 * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
+                        log("time cost : " + Config.SPEED_SMOOTH_FACTOR * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
                     }
                 } else if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                     // ...
@@ -142,9 +154,38 @@ public class MainController implements Initializable {
             }).start();
         });
 
+        btnReduceLogs.setOnAction(e -> {
+            double offY = logsPane.getPrefHeight() - logsToolBar.getMinHeight();
+            if(logsReduced) {
+                logsPane.setTranslateY(0); logsListView.setTranslateY(0);
+                logsReduced = false;
+                btnReduceLogs.setStyle("-fx-rotate: 0");
+            } else {
+                logsPane.setTranslateY(offY); logsListView.setTranslateY(offY);
+                logsReduced = true;
+                btnReduceLogs.setStyle("-fx-rotate: 180");
+            }
+
+        });
+
         // Create operators for zoom and drag on map
         zoomOperator = new AnimatedZoomOperator(mapPane, zoomFactor);
         dragOperator = new AnimatedDragOperator(mapPane);
+    }
+
+    public void installTooltip(String infos, javafx.scene.Node node) {
+        Tooltip tooltip = new Tooltip(infos);
+        Tooltip.install(node, tooltip);
+        // "hack" to display tooltip directly
+        node.setOnMouseEntered(e -> {
+            // repositioning
+            Point2D p = node.localToScreen(e.getX(), e.getY());
+            // add offsets to x and y to avoid infinitely triggering mouse entered cause of tooltip shadowing cursor
+            tooltip.show(leftPane.getScene().getWindow(), p.getX() + 10, p.getY() + 10);
+        });
+        node.setOnMouseExited(e -> {
+            tooltip.hide();
+        });
     }
 
     public void chooseBounds() {
@@ -182,6 +223,12 @@ public class MainController implements Initializable {
                     " left=" + minlon.getText() +
                     " bottom=" + minlat.getText() +
                     " right=" + maxlon.getText();
+            if(completeWaysSelected)
+                boundingBox +=
+                    " completeWays=yes"; // allow to fetch all nodes composing ways that overflow bounding box
+                                         // by default, set to "no". If "yes", take about ~5 more time to import
+                                         // but prevents missing ways and problems while computing shortest paths
+                                         // (just remove this line if not necessary)
             String commandWays = "osmosis --read-pbf " + pbfFile
                     // assuming user has not given bounds yet
                     + (Double.parseDouble(minlon.getText()) == 0 ? "" : boundingBox);
@@ -190,9 +237,10 @@ public class MainController implements Initializable {
             int nbPlace = 0, nbRoad = 0;
             String places = " --tf accept-nodes place=", roads = " --tf accept-ways highway=";
             ObservableList choices = importChoices.getChildren();
+
             for (Object choice : choices) {
                 RadioButton rb = ((RadioButton) choice);
-                if (rb.isSelected()) {
+                if (rb.isSelected() && !rb.equals(completeWays)) {
                     // we use 'I' as a delimiter in the fx id because special chars are not allowed
                     String choiceKey = rb.getId(), choiceValue = choiceKey.substring(choiceKey.indexOf("I") + 1);
                     switch (choiceKey.substring(0, choiceKey.indexOf("I"))) {
@@ -209,6 +257,7 @@ public class MainController implements Initializable {
                     }
                 }
             }
+            System.out.println(commandWays);
 
             // if user didn't give args at all
             if (nbPlace == 0 && nbRoad == 0) {
@@ -219,7 +268,7 @@ public class MainController implements Initializable {
             commandCities += (nbPlace == 0 ? "" : places) + " --tf reject-ways --tf reject-relation --wx ./input/cities.osm";
             return new String[]{commandWays, commandCities};
         } catch (Exception e) {
-            log("you seem not to have an input file with a .pbf file (put it on the root folder of the project)",
+            log("you seem not to have an input file with a .pbf file (put it on the input/ folder)",
                     Log.LogLevels.WARNING);
             return new String[]{"", ""};
         }
@@ -291,7 +340,6 @@ public class MainController implements Initializable {
 
     public void drawPath(List<Node> nodes) {
 
-        //default metric for MN03 is centimeter
         double[] bounds = g.getBounds();
         double[] shape1 = Maths.mapProjection(bounds[1], bounds[0]); // upper left corner
         double[] shape2 = Maths.mapProjection(bounds[3], bounds[2]); // bottom right corner
@@ -368,6 +416,7 @@ public class MainController implements Initializable {
             defaultWidth = 1280 / ratioHoverW;
         }
 
+        // get map tile from mapbox api for corresponding area
         String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
                 + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/"
                 + (int) defaultWidth + "x" + (int) defaultHeight
@@ -401,8 +450,8 @@ public class MainController implements Initializable {
                         double endY = -1 * (nodeShape[1] - shape1[1]) * factorY / mapShape[1];
 
                         Line line = new Line(startX, startY, endX, endY);
-                        line.setStroke(Config.roadTypeColor.get(roadType));
-                        line.setStrokeWidth(Config.roadTypeStrokeWidth.get(roadType));
+                        line.setStroke(Config.getRoadTypeColor(roadType));
+                        line.setStrokeWidth(Config.getRoadTypeStrokeWidth(roadType));
                         mapLinesGroup.getChildren().add(line);
                     }
                 }
@@ -412,6 +461,7 @@ public class MainController implements Initializable {
 
         // add cities
         HashMap<Long, Node> cities = g.getCities();
+
         int maxPop = g.getMaxPopulation();
         double maxRadius = Math.sqrt(300);
 
@@ -433,19 +483,7 @@ public class MainController implements Initializable {
 
             // customize hover property to show the place information
             circle.getStyleClass().add("city-circle");
-            Tooltip cityInfos = new Tooltip(n.toString());
-            Tooltip.install(circle, cityInfos);
-            // "hack" to display tooltip directly
-            circle.setOnMouseEntered(e -> {
-                // repositioning
-                Point2D p = circle.localToScreen(e.getX(), e.getY());
-                // add offsets to x and y to avoid infinitely triggering mouse entered cause of tooltip shadowing cursor
-                cityInfos.show(leftPane.getScene().getWindow(), p.getX() + 10, p.getY() + 10);
-            });
-
-            circle.setOnMouseExited(e -> {
-                cityInfos.hide();
-            });
+            installTooltip(n.toString(), circle);
 
             mapCitiesGroup.getChildren().add(circle);
         }

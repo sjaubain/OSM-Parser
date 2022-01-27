@@ -1,5 +1,6 @@
 package heig.osmparser.converters;
 
+import heig.osmparser.configs.Config;
 import heig.osmparser.controllers.MainController;
 import heig.osmparser.controllers.MainControllerHandler;
 import heig.osmparser.logs.Log;
@@ -66,7 +67,7 @@ public class CSVConverter extends MainControllerHandler {
             BufferedWriter edgesWriter = new BufferedWriter(new FileWriter(DEFAULT_OUTPUT_FILENAME_EDGES));
 
             nodesWriter.write("node_id,place_name,lat,lon\n");
-            edgesWriter.write("from_node_id,to_node_id,time_cost\n");
+            edgesWriter.write("from_node_id,to_node_id,from_city_name,to_city_name,time_cost\n");
             List<Long> citiesIds = new ArrayList<>(g.getCities().keySet());
             for(int i = 0; i < citiesIds.size(); ++i) {
                 Node city1 = g.getCities().get(citiesIds.get(i));
@@ -77,7 +78,8 @@ public class CSVConverter extends MainControllerHandler {
                     Node city2 = g.getCities().get(citiesIds.get(j));
                     Node n2 = g.getClosestNodeFromGPSCoords(city2.getLat(), city2.getLon());
                     double c_ij = g.getLambda().get(n2.getId());
-                    edgesWriter.write(city1.getId() + "," + city2.getId() + "," + Maths.round(c_ij, 4) + "\n");
+                    edgesWriter.write(city1.getId() + "," + city2.getId() + ","
+                            + city1.getName() + "," + city2.getName() + "," + Maths.round(c_ij, 4) * Config.SPEED_SMOOTH_FACTOR + "\n");
                 }
             }
             sendMessageToController("export done", Log.LogLevels.INFO);
