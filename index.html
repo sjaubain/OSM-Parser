@@ -6,16 +6,19 @@
   </head>
   <body>
     <h1 id="osm-parser-graph-builder">OSM Parser - Graph builder</h1>
-    <p><img src="screenshot.png" style="display: block; margin: 0 auto" /></p>
+    <p align="center">
+      <img src="images/screenshot.png" style="display: block; margin: 0 auto" />
+    </p>
+
     <h2 id="overview">Overview</h2>
-    <p>OSM Parser is a Java application that aims to allow the user to parse data from OpenStreetMap (<a href="">https://www.openstreetmap.org/</a>), in particular the roads and cities and turn them into a graph, perform opertions on it such as computing shortest paths, and export it as a CSV file, PNG or EPS image. The GUI uses the JavaFX library and <em>osmosis</em> to filter data from large .pbf files, (You can find them <a href="https://download.geofabrik.de/">here</a>). Osmosis is a command line tool that let you keep nodes or ways with specific tags, reject other with other tags, choose elements according to desired specifications, fetch elements from a database,..</p>
+    <p>OSM Parser is a Java application that aims to allow the user to parse data from OpenStreetMap (<a href="">https://www.openstreetmap.org/</a>), in particular the roads and cities and turn them into a graph, perform opertions on it such as computing shortest paths, and export it as a CSV file, PNG or EPS image. The GUI uses the JavaFX library and <em>osmosis</em> to filter data from large .pbf files, (You can find them <a href="https://download.geofabrik.de/">here</a>). Osmosis is a command line tool that lets you keep nodes or ways with specific tags, reject specific ones with other tags, choose elements according to some desired specification, fetch elements from a database,..</p>
     <p>The documentation and source code for osmosis can be found here :</p>
     <ul>
     <li>github <a href="https://github.com/openstreetmap/osmosis">source code</a>.</li>
     <li>wiki <a href="https://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.48">detailed specifications</a>.</li>
     </ul>
     <h2 id="status">Status</h2>
-    <p>Work still in progress. Please report all bugs.</p>
+    <p>Work still in progress. Please report all bugs and suggestion.</p>
     <h2 id="installation">Installation</h2>
     <pre><code class="lang-bash">git <span class="hljs-keyword">clone</span> <span class="hljs-title">https</span>://github.com/sjaubain/OSM-Parser.git
     </code></pre>
@@ -41,14 +44,14 @@
     <pre><code class="lang-bash"><span class="hljs-symbol">sudo</span> <span class="hljs-keyword">bash </span>linux_setup.sh
     </code></pre>
     <p>To run the application, type</p>
-    <pre><code class="lang-bash"><span class="hljs-symbol">sudo</span> <span class="hljs-keyword">bash </span>linux_launcher
+    <pre><code class="lang-bash"><span class="hljs-symbol">sudo</span> <span class="hljs-keyword">bash </span>linux_launcher.sh
     </code></pre>
     <p>If you get errors, try to check if you have a valid JDK installed on your machine with <code>java -version</code>. If two or more JDKs are installed you can choose which one you want to use with</p>
     <pre><code class="lang-bash">sudo <span class="hljs-keyword">update</span>-alternatives <span class="hljs-comment">--config java</span>
     </code></pre>
-    <p>and same for javac, the java compiler. Try to rerun the script and this should be ok.</p>
+    <p>and same for javac, the java compiler. (The maven build tool uses the version 11 of java, so you should choose this one). Try to rerun the script and this should be ok.</p>
     <h2 id="usage">Usage</h2>
-    <p>Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). If you want a complete networks, choose all options. (<strong>Warning : if your request involves too many nodes, i.e. too large map with too much roads, you will get a java heap out of space memory exception and the program will crash</strong>). You can also pick the bounds you want with left mouse button on the window you can open by clicking on the &quot;choose bounds&quot; button. Make sure that you pick the bounds on the region that corresponds to your .pbf file.
+    <p>Once Osmosis is installed, you can download a country as .pbf file on geofabrik download server and put it in the /input folder. You also can put your own .osm file but you will have to name it &quot;ways.osm&quot; (<strong>warning : such a file may contain all possible type of ways and result in a very large graph</strong>). On the right pane, you can choose which type of road you want to filter (note that the ..._link categories should be taken with the corresponding type of road for a correct usage). If you want a complete networks, choose all options. (<strong>warning : if your request involves too many nodes, i.e. too large map with too much roads, you will get a java heap out of space memory exception and the program will crash</strong>). You can also pick the bounds you want with left mouse button on the window you can open by clicking on the &quot;choose bounds&quot; button. Make sure that you pick the bounds on the region that corresponds to your .pbf file.
     Then click on <em>import</em> and wait for osmosis to do its job; (You will see two times <code>INFOS: Pipeline executing, waiting for completion.</code> and will have to wait two times until you see <code>INFOS: Total execution time: .... milliseconds.</code>). After you have loaded the graph, you can zoom and drag with right mouse button on the map. Click on &quot;show background&quot; if you want to have a more precise idea about where you are. To compute shortest paths, you just have to click twice on the map to choose source and destination nodes.</p>
     <h3 id="-export-files-"><strong>export files</strong></h3>
     <p>You can export the graph in CSV format with File -&gt; Export</p>
@@ -60,7 +63,25 @@
     <li>compressed graph</li>
     </ul>
     <p>Only cities nodes and edges between them (computed shortest paths) will be exported. Here is an output exmple :</p>
-    <p><img src="screenshot2.png" style="display: block; margin: 0 auto" /></p>
+    <p align="center">
+      <img src="images/screenshot2.png" style="display: block; margin: 0 auto" />
+    </p>
+
+    <p>To test the precision of those results, we use the matrix distance API of the free service <a href="https://openrouteservice.org/dev/#/api-docs/v2/matrix/{profile}/post">openrouteservice</a> for the first 50 cities of a data sample around the region of Yverdon-Les-Bains, Switzerland, and compare the results with those given with the OSM-Parser CSV export tool. Since there are 50 cities, we obtain 50 x 50 time routes, one for each pair of cities.</p>
+    <p align="center">
+      <img src="images/screenshot3.png" style="display: block; margin: 0 auto" />
+    </p>
+
+    <p>We can see a correlation. However, the slope of the line that fit the dots is not exactly 1. In fact, we just have to adjust the parameter <code>SPEED_SMOOTH_FACTOR</code> in the config file if needed. Below another example with the 50 most important towns of Switzerland.</p>
+    <p align="center">
+      <img src="images/screenshot4.png" style="display: block; margin: 0 auto" />
+    </p>
+
+    <p>Here again, the resuls are quite good, except a group of points far from the regression line. The most extreme point corresponds to the route that link <em>Visp</em> to <em>Spiez</em>. As you can see in the image below, the shortest path in blue is not the real shortest path. In fact, there is a tunnel between these two places, but it has not been parsed with osmosis in this example.</p>
+    <p align="center">
+      <img src="images/screenshot5.png" style="display: block; margin: 0 auto" />
+    </p>
+
 
   </body>
 </html>
