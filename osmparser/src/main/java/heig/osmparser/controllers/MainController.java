@@ -416,6 +416,7 @@ public class MainController implements Initializable {
             defaultWidth = 1280 / ratioHoverW;
         }
 
+        // get map tile from mapbox api for corresponding area
         String url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/"
                 + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/"
                 + (int) defaultWidth + "x" + (int) defaultHeight

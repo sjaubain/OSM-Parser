@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public abstract class Config {
     public static HashMap<String, Double> ROAD_TYPE_STROKE_WIDTH = new HashMap<String, Double>() {{
-        put("", 0.4);
+        put("", 0.07);
         put("motorway", 0.6);
         put("motorway_link", 0.6);
         put("primary", 0.3);
@@ -22,7 +22,7 @@ public abstract class Config {
     }};
 
     public static HashMap<String, Color> ROAD_TYPE_COLOR = new HashMap<String, Color>() {{
-        put("", Color.RED);
+        put("", Color.GREEN);
         put("motorway", Color.ORANGE);
         put("motorway_link", Color.ORANGE);
         put("primary", Color.DARKORANGE);

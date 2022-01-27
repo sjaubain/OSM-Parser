@@ -5,3 +5,13 @@ Mapnik
 https://docs.mapbox.com/api/styles/v1/simonjobin/
 https://docs.mapbox.com/api/maps/static-images/
 https://www.epfl.ch/campus/library/collections/maps-geodata/
+
+estimating traffic stats from osm : 
+
+https://towardsdatascience.com/estimating-travel-cost-from-openstreetmap-49138ff81289
+
+!!!!!!!!!!!!!
+
+https://docs.mapbox.com/data/traffic/guides/data/
+
+!!!!!!!!!!!!!
