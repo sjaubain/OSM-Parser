@@ -257,7 +257,6 @@ public class MainController implements Initializable {
                     }
                 }
             }
-            System.out.println(commandWays);
 
             // if user didn't give args at all
             if (nbPlace == 0 && nbRoad == 0) {
