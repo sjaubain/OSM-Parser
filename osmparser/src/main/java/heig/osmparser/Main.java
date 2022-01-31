@@ -15,7 +15,7 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("main.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1100, 700);
         stage.setTitle("OSM Parser");
-        stage.setResizable(false);
+        //stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
 
