@@ -157,11 +157,11 @@ public class MainController implements Initializable {
         btnReduceLogs.setOnAction(e -> {
             double offY = logsPane.getPrefHeight() - logsToolBar.getMinHeight();
             if(logsReduced) {
-                logsPane.setTranslateY(0); logsListView.setTranslateY(0);
+                logsPane.setTranslateY(0); logsListView.setTranslateY(0); logsToolBar.setTranslateY(0);
                 logsReduced = false;
                 btnReduceLogs.setStyle("-fx-rotate: 0");
             } else {
-                logsPane.setTranslateY(offY); logsListView.setTranslateY(offY);
+                logsPane.setTranslateY(offY); logsListView.setTranslateY(offY); logsToolBar.setTranslateY(offY);
                 logsReduced = true;
                 btnReduceLogs.setStyle("-fx-rotate: 180");
             }
