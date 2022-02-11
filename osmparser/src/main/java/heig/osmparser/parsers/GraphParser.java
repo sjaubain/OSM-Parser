@@ -201,6 +201,7 @@ public class GraphParser extends MainControllerHandler {
 
             // first retrieve again all the ways
             nodes = doc.getElementsByTagName("way");
+
             for (int i = 0; i < nodes.getLength(); ++i) {
 
                 Node node = nodes.item(i);
@@ -228,6 +229,13 @@ public class GraphParser extends MainControllerHandler {
                             curNode = nextNode;
                         }
 
+                        /**
+                         * search for intermediate nodes that are part of another road
+                         * because such a node could have already been registered as part
+                         * of the way we are currently looking at, we may add edges that already
+                         * exist. This problem will be resolved further, while building the
+                         * new adj list (the one without paths that overflow bounding box)
+                         */
                         if (g.getAdjList().containsKey(curNode)) {
                             if (curNode != lastNode) foundIntermediateNodes = true;
                             g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
@@ -243,6 +251,7 @@ public class GraphParser extends MainControllerHandler {
                     }
                 }
             }
+
 
             sendMessageToController("resolving missing nodes", Log.LogLevels.INFO);
 
@@ -260,8 +269,16 @@ public class GraphParser extends MainControllerHandler {
                         Way w = curAdjList.get(id).get(i);
                         long id2 = w.getToId();
                         if (g.getNodes().containsKey(id2)) {
-                            nbEdges++;
-                            newAdjList.get(id).add(new Way(id, id2, w.getCost(), w.getRoadType()));
+                            // if the edge does not still exist TODO: know why edges are added multiple times
+                            boolean edgeStillExists = false;
+                            for(Way w2 : newAdjList.get(id)) {
+                                // TODO: add a static method in Way class to compare ways
+                                if(w2.getToId() == id2) edgeStillExists = true;
+                            }
+                            if(!edgeStillExists) {
+                                nbEdges++;
+                                newAdjList.get(id).add(new Way(id, id2, w.getCost(), w.getRoadType()));
+                            }
                         }
                     }
                 }
@@ -269,6 +286,12 @@ public class GraphParser extends MainControllerHandler {
             g.setAdjList(newAdjList);
             int finalNbEdges = nbEdges;
 
+            for (long id : newAdjList.keySet()) {
+                if(newAdjList.get(id).size() > 2) {
+                    System.out.println("[" + id + "," + g.getNodes().get(id).getLat() + "," + g.getNodes().get(id).getLon() + "],");
+                }
+            }
+            
             sendMessageToController("parsing done. " + g.getAdjList().size() + " nodes, " + finalNbEdges + " edges.",
                     Log.LogLevels.INFO);
 

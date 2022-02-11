@@ -16,3 +16,10 @@ https://docs.mapbox.com/data/traffic/guides/data/
 https://docs.mapbox.com/api/navigation/directions/
 
 !!!!!!!!!!!!!
+
+different traffic api, example for 9000 nodes * 24 hours * 30 days : 
+	- tomtom (3200$) 2500 free / days
+	- here api (6300$) 250'000 free / months
+	- mapbox (6200$) 100'000 free / months
+
+
