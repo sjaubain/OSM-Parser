@@ -286,12 +286,13 @@ public class GraphParser extends MainControllerHandler {
             g.setAdjList(newAdjList);
             int finalNbEdges = nbEdges;
 
+            /* for debug purpose
             for (long id : newAdjList.keySet()) {
                 if(newAdjList.get(id).size() > 2) {
                     System.out.println("[" + id + "," + g.getNodes().get(id).getLat() + "," + g.getNodes().get(id).getLon() + "],");
                 }
             }
-            
+            */
             sendMessageToController("parsing done. " + g.getAdjList().size() + " nodes, " + finalNbEdges + " edges.",
                     Log.LogLevels.INFO);
 
