@@ -2,6 +2,7 @@
 *.osm
 *.pbf
 *.csv
+*.json
 
 target/
 pom.xml.tag
