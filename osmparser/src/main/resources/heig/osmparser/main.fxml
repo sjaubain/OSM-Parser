@@ -13,6 +13,7 @@
                 <Menu mnemonicParsing="false" text="File">
                     <items>
                         <MenuItem fx:id="mnitmExportRawCSV" mnemonicParsing="false" text="Export raw graph as CSV"/>
+                        <MenuItem fx:id="mnitmExportRawJSON" mnemonicParsing="false" text="Export raw graph as JSON"/>
                         <MenuItem fx:id="mnitmExportSPCSV" mnemonicParsing="false"
                                   text="Export SP between cities as CSV"/>
                     </items>

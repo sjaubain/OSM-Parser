@@ -3,6 +3,7 @@ package heig.osmparser.controllers;
 import heig.osmparser.Main;
 import heig.osmparser.configs.Config;
 import heig.osmparser.converters.CSVConverter;
+import heig.osmparser.converters.JSONConverter;
 import heig.osmparser.logs.Log;
 import heig.osmparser.maths.Maths;
 import heig.osmparser.model.Graph;
@@ -55,7 +56,7 @@ public class MainController implements Initializable {
     @FXML
     private VBox importChoices;
     @FXML
-    private MenuItem mnitmExportRawCSV, mnitmExportSPCSV, mnitmEdit, mnitmHelp;
+    private MenuItem mnitmExportRawCSV, mnitmExportRawJSON, mnitmExportSPCSV, mnitmEdit, mnitmHelp;
     @FXML
     private RadioButton completeWays;
 
@@ -144,6 +145,10 @@ public class MainController implements Initializable {
         mnitmExportRawCSV.setOnAction(event -> {
             log("exporting CSV files to output/ directory", Log.LogLevels.INFO);
             new CSVConverter(this).rawGraphToCSV(g);
+        });
+        mnitmExportRawJSON.setOnAction(event -> {
+            log("exporting JSON files to output/ directory", Log.LogLevels.INFO);
+            new JSONConverter(this).rawGraphToJSON(g);
         });
         mnitmExportSPCSV.setOnAction(event -> {
             new Thread(() -> {
@@ -420,6 +425,7 @@ public class MainController implements Initializable {
                 + "[" + bounds[0] + "," + bounds[3] + "," + bounds[2] + "," + bounds[1] + "]/"
                 + (int) defaultWidth + "x" + (int) defaultHeight
                 + "@2x?access_token=" + API_KEY;
+
         Image image = new Image(url);
         // create a background image
         BackgroundImage backgroundimage = new BackgroundImage(image,
