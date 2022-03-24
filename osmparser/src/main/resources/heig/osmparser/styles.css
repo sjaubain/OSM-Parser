@@ -32,7 +32,7 @@
 .list-view {
     -fx-control-inner-background: #d3d3d3;
     -fx-font-family: "DejaVu Sans Mono";
-    -fx-font-size: 10;
+    -fx-font-size: 12;
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
