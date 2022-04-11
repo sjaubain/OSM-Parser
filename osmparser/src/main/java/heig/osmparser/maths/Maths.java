@@ -45,6 +45,21 @@ public abstract class Maths {
     }
 
     /*
+     * specific to swiss system
+     * East and North are in meters
+     * source : https://www.swisstopo.admin.ch/fr/cartes-donnees-en-ligne/calculation-services/navref.html
+     */
+    public static double[] MN95ToLatLon(double E, double N) {
+        double yp = (E - 2600000) / 1000000;
+        double xp = (N - 1200000) / 1000000;
+        System.out.println("xp : " + xp + ", yp : " + yp);
+        double lambdap = 2.6779094 + 4.728982 * yp + 0.791484 * xp * yp + 0.1306 * yp * xp * xp  - 0.0436 * yp * yp * yp;
+        double phip = 16.9023892 + 3.238272 * xp - 0.270978 * yp * yp - 0.002528 * xp * xp
+                - 0.0447 * yp * yp * xp - 0.0140 * xp * xp * xp;
+        return new double[]{phip * 100./36, lambdap * 100./36};
+    }
+
+    /*
      * transform (lat, lon) for Mercator projection
      * returns (x, y) both in range [-1, 1] for correct values for lat and lon
      * (between min an max lat)
