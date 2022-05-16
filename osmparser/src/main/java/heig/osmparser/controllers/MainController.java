@@ -134,7 +134,8 @@ public class MainController implements Initializable {
                         Node to = g.getClosestNodeFromGPSCoords(coords[0], coords[1]);
                         firstNodeChoosen = true;
                         drawPath(g.getShortestPath(to));
-                        log("time cost : " + Config.SPEED_SMOOTH_FACTOR * g.getLambda().get(to.getId()) / 60d + " minutes", Log.LogLevels.INFO);
+                        log("time cost : " + Config.SPEED_SMOOTH_FACTOR * g.getLambdaTime().get(to.getId()) / 60d
+                                + " minutes", Log.LogLevels.INFO);
                     }
                 } else if (current_action.equals(ACTION_PERFORM.AREA_SELECTION)) {
                     // ...
@@ -323,11 +324,12 @@ public class MainController implements Initializable {
                     parser.addCities(g, "./input/cities.osm");
                 } catch (IOException | SAXException | ParserConfigurationException e) {
                     log(e.toString(), Log.LogLevels.ERROR);
+                } finally {
+                    Platform.runLater(() -> {
+                        drawGraph();
+                        displayBounds(g.getBounds());
+                    });
                 }
-                Platform.runLater(() -> {
-                    drawGraph();
-                    displayBounds(g.getBounds());
-                });
             }).start();
         } catch (Exception e) {
             log(e.toString(), Log.LogLevels.ERROR);

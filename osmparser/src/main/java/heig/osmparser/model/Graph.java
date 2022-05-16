@@ -25,7 +25,9 @@ public class Graph {
 
     private HashMap<Long, Long> pred;
 
-    private HashMap<Long, Double> lambda;
+    private HashMap<Long, Double> lambdaTime;
+
+    private HashMap<Long, Double> lambdaLength;
 
     public Graph() {
         nodes = new HashMap<>();
@@ -50,13 +52,13 @@ public class Graph {
         return nodes.containsKey(id);
     }
 
-    public void addEdge(Long n1Id, Long n2Id, double cost, String roadType) {
+    public void addEdge(Way way) {
 
-        if (!adjList.containsKey(n1Id)) {
-            List list = new LinkedList<>(); list.add(new Way(n1Id, n2Id, cost, roadType));
-            adjList.put(n1Id, list);
+        if (!adjList.containsKey(way.getFromId())) {
+            List list = new LinkedList<>(); list.add(way);
+            adjList.put(way.getFromId(), list);
         } else {
-            adjList.get(n1Id).add(new Way(n1Id, n2Id, cost, roadType));
+            adjList.get(way.getFromId()).add(way);
         }
     }
 
@@ -90,12 +92,16 @@ public class Graph {
 
     public void dijkstra(long src) {
         pred = new HashMap<>();
-        lambda = new HashMap<>();
+        lambdaTime = new HashMap<>();
+        lambdaLength = new HashMap<>();
         for(long node : adjList.keySet()) {
-            if(node == src)
-                lambda.put(node, 0.0);
-            else
-                lambda.put(node, Double.MAX_VALUE);
+            if(node == src) {
+                lambdaTime.put(node, 0.0);
+                lambdaLength.put(node, 0.0);
+            } else {
+                lambdaTime.put(node, Double.MAX_VALUE);
+                lambdaLength.put(node, Double.MAX_VALUE);
+            }
             pred.put(node, (long)-1);
         }
         // custom min heap
@@ -110,11 +116,13 @@ public class Graph {
                     long j_id = weightedEdge.getToId();
                     Node j = nodes.get(j_id);
                     if(j != null) {
-                        double c_ij = weightedEdge.getCost();
-                        if(lambda.get(j_id) > lambda.get(i_id) + c_ij) {
-                            lambda.replace(j_id, lambda.get(i_id) + c_ij);
+                        double c_ij = weightedEdge.getTimeCost();
+                        double c_ij_p = weightedEdge.getLengthCost();
+                        if(lambdaTime.get(j_id) > lambdaTime.get(i_id) + c_ij) {
+                            lambdaTime.replace(j_id, lambdaTime.get(i_id) + c_ij);
+                            lambdaLength.replace(j_id, lambdaLength.get(i_id) + c_ij_p);
                             pred.replace(j_id, i_id);
-                            Q.add(new Pair<>(lambda.get(j_id), j_id));
+                            Q.add(new Pair<>(lambdaTime.get(j_id), j_id));
                         }
                     }
                 }
@@ -153,8 +161,12 @@ public class Graph {
         return maxPopulation;
     }
 
-    public HashMap<Long, Double> getLambda() {
-        return lambda;
+    public HashMap<Long, Double> getLambdaTime() {
+        return lambdaTime;
+    }
+
+    public HashMap<Long, Double> getLambdaLength() {
+        return lambdaLength;
     }
 
     public HashMap<Long, Long> getPred() {

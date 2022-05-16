@@ -5,6 +5,7 @@ import heig.osmparser.controllers.MainControllerHandler;
 import heig.osmparser.logs.Log;
 import heig.osmparser.model.Graph;
 import heig.osmparser.model.Node;
+import heig.osmparser.model.Way;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -36,6 +37,10 @@ public class JSONConverter extends MainControllerHandler {
                 Node n1 = g.getNodes().get(i);
                 nodesWriter.write("[" + n1.getId() + "," + n1.getLat() + "," + n1.getLon() + "]"
                         + (nodesCount != g.size() - 1 ? ",\n" : "\n"));
+                for (Way w: g.getAdjList().get(i)) {
+                    long n2Id = w.getToId();
+                    edgesWriter.write(n1.getId() + "," + n2Id + "\n");
+                }
                 nodesCount++;
             }
             nodesWriter.write("]\n}");

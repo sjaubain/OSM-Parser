@@ -163,7 +163,7 @@ public class GraphParser extends MainControllerHandler {
                     registeredNodes.put(String.valueOf(n1), true);
                     registeredNodes.put(String.valueOf(n2), true);
 
-                    double cost = 0;
+                    double timeCost = 0;
                     for (int j = 0; j < nodesInWay.getLength() - 1; ++j) {
                         long cur = Long.parseLong(((Element) nodesInWay.item(j))
                                 .getAttribute("ref"));
@@ -171,11 +171,13 @@ public class GraphParser extends MainControllerHandler {
                                 .getAttribute("ref"));
 
                         if (usedNodes.get(cur) != null && usedNodes.get(next) != null) {
-                            cost = getCost(usedNodes, maxSpeed, cost, cur, next);
+                            timeCost = getTimeCost(usedNodes, maxSpeed, timeCost, cur, next);
                         }
                     }
-                    g.addEdge(n1, n2, cost, roadType == null ? "" : roadType);
-                    g.addEdge(n2, n1, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
+                    g.addEdge(new Way(n1, n2, timeCost, timeCost * maxSpeed, roadType == null ? "" : roadType));
+                    g.addEdge(new Way(n2, n1, bothSides ? timeCost : Double.MAX_VALUE,
+                                              bothSides ? timeCost * maxSpeed : Double.MAX_VALUE,
+                                              roadType == null ? "" : roadType));
                 }
             }
 
@@ -218,14 +220,14 @@ public class GraphParser extends MainControllerHandler {
                     long lastNode = Long.parseLong(((Element) nodesInWay.item(nodesInWay.getLength() - 1)).getAttribute("ref"));
                     boolean foundIntermediateNodes = false;
 
-                    double cost = 0;
+                    double timeCost = 0;
                     for (int k = 1; k < nodesInWay.getLength(); ++k) {
                         Node child = nodesInWay.item(k);
                         Element kthNode = (Element) child;
                         long nextNode = Long.parseLong(kthNode.getAttribute("ref"));
 
                         if (usedNodes.get(curNode) != null && usedNodes.get(nextNode) != null) {
-                            cost = getCost(usedNodes, maxSpeed, cost, curNode, nextNode);
+                            timeCost = getTimeCost(usedNodes, maxSpeed, timeCost, curNode, nextNode);
                             curNode = nextNode;
                         }
 
@@ -238,10 +240,14 @@ public class GraphParser extends MainControllerHandler {
                          */
                         if (g.getAdjList().containsKey(curNode)) {
                             if (curNode != lastNode) foundIntermediateNodes = true;
-                            g.addEdge(startNode, curNode, cost, roadType == null ? "" : roadType);
-                            g.addEdge(curNode, startNode, bothSides ? cost : Double.MAX_VALUE, roadType == null ? "" : roadType);
+                            g.addEdge(new Way(startNode, curNode, timeCost, timeCost * maxSpeed,
+                                    roadType == null ? "" : roadType));
+                            g.addEdge(new Way(curNode, startNode,
+                                    bothSides ? timeCost : Double.MAX_VALUE,
+                                    bothSides ? timeCost * maxSpeed : Double.MAX_VALUE,
+                                    roadType == null ? "" : roadType));
                             startNode = curNode;
-                            cost = 0.0;
+                            timeCost = 0.0;
                         }
                     }
 
@@ -277,7 +283,7 @@ public class GraphParser extends MainControllerHandler {
                             }
                             if(!edgeStillExists) {
                                 nbEdges++;
-                                newAdjList.get(id).add(new Way(id, id2, w.getCost(), w.getRoadType()));
+                                newAdjList.get(id).add(w);
                             }
                         }
                     }
@@ -354,15 +360,15 @@ public class GraphParser extends MainControllerHandler {
         return true;
     }
 
-    private double getCost(HashMap<Long, heig.osmparser.model.Node> usedNodes,
-                           double maxSpeed, double cost, long cur, long next) {
+    private double getTimeCost(HashMap<Long, heig.osmparser.model.Node> usedNodes,
+                           double maxSpeed, double timeCost, long cur, long next) {
         double lat1 = usedNodes.get(cur).getLat();
         double lon1 = usedNodes.get(cur).getLon();
         double lat2 = usedNodes.get(next).getLat();
         double lon2 = usedNodes.get(next).getLon();
-        cost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
+        timeCost += Maths.distanceNodes(new heig.osmparser.model.Node(0, lat1, lon1, 0),
                 new heig.osmparser.model.Node(0, lat2, lon2, 0)) / maxSpeed;
-        return cost;
+        return timeCost;
     }
 
     private boolean isInteger(String str) {
